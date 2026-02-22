@@ -21,19 +21,38 @@ export interface StockData {
   pcr: number;
   deliveryPct: number;
   starred: boolean;
+  category: "index" | "fno";
+  openPrice: number;
+  highPrice: number;
+  lowPrice: number;
+  ohlSignal: "O=H" | "O=L" | null;
 }
 
 const SECTOR_COLORS: Record<string, string> = {
-  IT: "#3b82f6", Banking: "#22c55e", Pharma: "#ec4899", Auto: "#f59e0b",
-  FMCG: "#a855f7", Metal: "#6b7280", Energy: "#ef4444", Realty: "#14b8a6",
+  Index: "#6366f1", IT: "#3b82f6", Banking: "#22c55e", Pharma: "#ec4899", Auto: "#f59e0b",
+  FMCG: "#ec4899", Metal: "#6b7280", Energy: "#eab308", Realty: "#92400e",
   Infra: "#f97316", "PSU Bank": "#84cc16", Financial: "#06b6d4", Telecom: "#8b5cf6",
   Cement: "#d946ef", Consumer: "#eab308",
 };
 
+const indexConfigs: { symbol: string; basePrice: number }[] = [
+  { symbol: "NIFTY 50", basePrice: 22450 },
+  { symbol: "BANKNIFTY", basePrice: 48200 },
+  { symbol: "FINNIFTY", basePrice: 20850 },
+  { symbol: "NIFTY IT", basePrice: 34500 },
+  { symbol: "NIFTY PHARMA", basePrice: 17200 },
+  { symbol: "NIFTY BANK", basePrice: 48100 },
+  { symbol: "NIFTY METAL", basePrice: 8450 },
+  { symbol: "NIFTY ENERGY", basePrice: 35200 },
+  { symbol: "NIFTY REALTY", basePrice: 920 },
+  { symbol: "NIFTY AUTO", basePrice: 23400 },
+  { symbol: "NIFTY FMCG", basePrice: 55800 },
+  { symbol: "NIFTY MIDCAP 100", basePrice: 48900 },
+  { symbol: "NIFTY SMALLCAP 100", basePrice: 16200 },
+  { symbol: "INDIA VIX", basePrice: 14.2 },
+];
+
 const stockConfigs: { symbol: string; sector: string; basePrice: number }[] = [
-  { symbol: "NIFTY", sector: "Index", basePrice: 22450 },
-  { symbol: "BANKNIFTY", sector: "Index", basePrice: 48200 },
-  { symbol: "FINNIFTY", sector: "Index", basePrice: 20850 },
   { symbol: "RELIANCE", sector: "Energy", basePrice: 2480 },
   { symbol: "TCS", sector: "IT", basePrice: 3850 },
   { symbol: "INFY", sector: "IT", basePrice: 1520 },
@@ -83,29 +102,52 @@ const stockConfigs: { symbol: string; sector: string; basePrice: number }[] = [
   { symbol: "FEDERALBNK", sector: "Banking", basePrice: 158 },
 ];
 
+function makeOHL(changePct: number): "O=H" | "O=L" | null {
+  // ~15% of stocks get an OHL signal
+  const v = rand();
+  if (v > 0.92 && changePct < -0.5) return "O=H";
+  if (v > 0.84 && v <= 0.92 && changePct > 0.5) return "O=L";
+  return null;
+}
+
 export function generateStocks(): StockData[] {
-  return stockConfigs.map(c => {
+  const indices: StockData[] = indexConfigs.map(c => {
+    const changePct = r(-2, 2);
+    const ltp = c.basePrice * (1 + changePct / 100);
+    const openPrice = c.basePrice * (1 + r(-0.5, 0.5) / 100);
+    return {
+      symbol: c.symbol, sector: "Index", sectorColor: SECTOR_COLORS.Index,
+      ltp, change: ltp - c.basePrice, changePct,
+      high52w: c.basePrice * r(1.15, 1.45), low52w: c.basePrice * r(0.55, 0.85),
+      volume: r(200, 2000) * 1e7, oi: r(50, 200) * 1e5, oiChangePct: r(-5, 5),
+      iv: r(10, 25), pcr: r(0.6, 1.6), deliveryPct: 0, starred: false,
+      category: "index" as const, openPrice,
+      highPrice: Math.max(ltp, openPrice) * (1 + r(0, 0.5) / 100),
+      lowPrice: Math.min(ltp, openPrice) * (1 - r(0, 0.5) / 100),
+      ohlSignal: null,
+    };
+  });
+
+  const fno: StockData[] = stockConfigs.map(c => {
     const changePct = r(-4, 4);
     const ltp = c.basePrice * (1 + changePct / 100);
     const sectorColor = SECTOR_COLORS[c.sector] || "#6b7280";
+    const openPrice = c.basePrice * (1 + r(-1, 1) / 100);
+    const highPrice = Math.max(ltp, openPrice) * (1 + r(0, 1) / 100);
+    const lowPrice = Math.min(ltp, openPrice) * (1 - r(0, 1) / 100);
+    const ohl = makeOHL(changePct);
     return {
-      symbol: c.symbol,
-      sector: c.sector,
-      sectorColor,
-      ltp,
-      change: ltp - c.basePrice,
-      changePct,
-      high52w: c.basePrice * r(1.15, 1.45),
-      low52w: c.basePrice * r(0.55, 0.85),
-      volume: r(50, 800) * 1e7,
-      oi: c.sector === "Index" ? r(50, 200) * 1e5 : r(5, 80) * 1e5,
-      oiChangePct: r(-8, 8),
-      iv: r(12, 38),
-      pcr: r(0.5, 1.8),
-      deliveryPct: r(20, 75),
-      starred: rand() > 0.85,
+      symbol: c.symbol, sector: c.sector, sectorColor, ltp,
+      change: ltp - c.basePrice, changePct,
+      high52w: c.basePrice * r(1.15, 1.45), low52w: c.basePrice * r(0.55, 0.85),
+      volume: r(50, 800) * 1e7, oi: r(5, 80) * 1e5, oiChangePct: r(-8, 8),
+      iv: r(12, 38), pcr: r(0.5, 1.8), deliveryPct: r(20, 75),
+      starred: rand() > 0.85, category: "fno" as const,
+      openPrice, highPrice, lowPrice, ohlSignal: ohl,
     };
   });
+
+  return [...indices, ...fno];
 }
 
 let _stocks: StockData[] | null = null;

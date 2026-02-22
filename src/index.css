@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 240 25% 5%;
-    --foreground: 0 0% 100%;
+    --background: 240 10% 3.5%;
+    --foreground: 240 10% 90%;
 
-    --card: 240 17% 8.5%;
-    --card-foreground: 0 0% 100%;
+    --card: 240 17% 7%;
+    --card-foreground: 240 10% 90%;
 
-    --popover: 240 17% 10%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 240 17% 8%;
+    --popover-foreground: 240 10% 90%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 17% 12%;
-    --secondary-foreground: 240 12% 72%;
+    --secondary: 240 17% 10%;
+    --secondary-foreground: 240 10% 60%;
 
-    --muted: 240 17% 14%;
-    --muted-foreground: 240 12% 58%;
+    --muted: 240 17% 12%;
+    --muted-foreground: 240 10% 46%;
 
     --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
@@ -30,34 +30,39 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 21% 15%;
+    --border: 240 29% 14%;
     --input: 240 21% 18%;
     --ring: 217 91% 60%;
 
     --radius: 0.375rem;
 
-    /* Custom tokens */
     --positive: 142 71% 45%;
     --negative: 0 84% 60%;
     --positive-foreground: 0 0% 100%;
     --negative-foreground: 0 0% 100%;
-    
-    --surface: 240 17% 11%;
-    --surface-hover: 240 17% 14%;
-    
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --neutral: 239 84% 67%;
+    --neutral-foreground: 0 0% 100%;
+
+    --surface: 240 17% 9%;
+    --surface-hover: 240 17% 12%;
+
     --chart-binance: 45 93% 47%;
     --chart-bybit: 270 60% 55%;
     --chart-okx: 200 80% 50%;
     --chart-deribit: 30 90% 55%;
     --chart-others: 240 12% 50%;
 
-    --sidebar-background: 240 25% 5%;
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-background: 240 10% 3.5%;
+    --sidebar-foreground: 240 10% 90%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 17% 12%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 21% 15%;
+    --sidebar-accent: 240 17% 10%;
+    --sidebar-accent-foreground: 240 10% 90%;
+    --sidebar-border: 240 29% 14%;
     --sidebar-ring: 217 91% 60%;
   }
 }
@@ -66,73 +71,33 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
-
-  /* Tabular numbers for all data */
   .font-mono, .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
 }
 
 @layer utilities {
-  .text-positive {
-    color: hsl(var(--positive));
-  }
-  .text-negative {
-    color: hsl(var(--negative));
-  }
-  .bg-positive {
-    background-color: hsl(var(--positive));
-  }
-  .bg-negative {
-    background-color: hsl(var(--negative));
-  }
-  .bg-surface {
-    background-color: hsl(var(--surface));
-  }
-  .bg-surface-hover {
-    background-color: hsl(var(--surface-hover));
-  }
-  
-  /* Scrollbar styling */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-  }
+  .text-positive { color: hsl(var(--positive)); }
+  .text-negative { color: hsl(var(--negative)); }
+  .text-warning { color: hsl(var(--warning)); }
+  .text-neutral-accent { color: hsl(var(--neutral)); }
+  .bg-positive { background-color: hsl(var(--positive)); }
+  .bg-negative { background-color: hsl(var(--negative)); }
+  .bg-warning { background-color: hsl(var(--warning)); }
+  .bg-surface { background-color: hsl(var(--surface)); }
+  .bg-surface-hover { background-color: hsl(var(--surface-hover)); }
 
-  /* Heatmap cell colors */
-  .heatmap-strong-positive {
-    background-color: hsl(142 71% 45% / 0.6);
+  .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: hsl(var(--background)); }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+  @keyframes cell-flash {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
   }
-  .heatmap-positive {
-    background-color: hsl(142 71% 45% / 0.3);
-  }
-  .heatmap-weak-positive {
-    background-color: hsl(142 71% 45% / 0.12);
-  }
-  .heatmap-neutral {
-    background-color: hsl(var(--card));
-  }
-  .heatmap-weak-negative {
-    background-color: hsl(0 84% 60% / 0.12);
-  }
-  .heatmap-negative {
-    background-color: hsl(0 84% 60% / 0.3);
-  }
-  .heatmap-strong-negative {
-    background-color: hsl(0 84% 60% / 0.6);
-  }
+  .cell-flash { animation: cell-flash 0.3s ease-out; }
 }

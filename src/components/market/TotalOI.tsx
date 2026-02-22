@@ -1,60 +1,32 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { generateTimeSeries, EXCHANGE_COLORS, formatCompact } from "@/data/mockData";
-import { TimeRangeSelector } from "@/components/shared/TimeRangeSelector";
-import { ExchangeLegend } from "@/components/shared/ExchangeLegend";
-
-const timeRanges = ["1d", "7d", "30d", "90d", "1y"];
+import { generateTimeSeries } from "@/data/mockStocks";
 
 export function TotalOI() {
-  const [timeRange, setTimeRange] = useState("7d");
-  const data = useMemo(() => {
-    const pointsMap: Record<string, number> = { "1d": 24, "7d": 168, "30d": 200, "90d": 200, "1y": 200 };
-    return generateTimeSeries(pointsMap[timeRange] || 168, 3e9);
-  }, [timeRange]);
+  const data = useMemo(() => generateTimeSeries(100, 8000).map(p => ({
+    time: new Date(p.time).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+    indexOpt: (p.indexOptions || 0) / 1e7,
+    stockOpt: (p.stockOptions || 0) / 1e7,
+    indexFut: (p.indexFutures || 0) / 1e7,
+    stockFut: (p.stockFutures || 0) / 1e7,
+  })), []);
 
   return (
-    <div className="bg-card rounded border border-border">
-      <div className="flex items-center justify-between p-3 border-b border-border">
+    <div className="border border-border bg-card">
+      <div className="px-3 py-2 border-b border-border">
         <h3 className="text-xs font-semibold">Total Open Interest</h3>
-        <div className="flex items-center gap-4">
-          <ExchangeLegend />
-          <TimeRangeSelector ranges={timeRanges} selected={timeRange} onSelect={setTimeRange} />
-        </div>
+        <span className="text-[10px] text-muted-foreground">By segment · ₹ Cr</span>
       </div>
-      <div className="p-3 h-[300px]">
+      <div className="p-3 h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-            <XAxis
-              dataKey="time"
-              tick={{ fontSize: 9, fill: "hsl(240, 12%, 58%)" }}
-              axisLine={{ stroke: "hsl(240, 21%, 15%)" }}
-              tickLine={false}
-              tickFormatter={(v) => new Date(v).toLocaleDateString("en", { month: "short", day: "numeric" })}
-              minTickGap={40}
-            />
-            <YAxis
-              tick={{ fontSize: 9, fill: "hsl(240, 12%, 58%)" }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => "$" + formatCompact(v)}
-              width={50}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "hsl(240, 17%, 10%)",
-                border: "1px solid hsl(240, 21%, 15%)",
-                borderRadius: "4px",
-                fontSize: "11px",
-              }}
-              labelFormatter={(v) => new Date(v).toLocaleString()}
-              formatter={(value: number) => ["$" + formatCompact(value)]}
-            />
-            <Area type="monotone" dataKey="binance" stackId="1" stroke={EXCHANGE_COLORS.binance} fill={EXCHANGE_COLORS.binance} fillOpacity={0.6} />
-            <Area type="monotone" dataKey="bybit" stackId="1" stroke={EXCHANGE_COLORS.bybit} fill={EXCHANGE_COLORS.bybit} fillOpacity={0.6} />
-            <Area type="monotone" dataKey="okx" stackId="1" stroke={EXCHANGE_COLORS.okx} fill={EXCHANGE_COLORS.okx} fillOpacity={0.6} />
-            <Area type="monotone" dataKey="deribit" stackId="1" stroke={EXCHANGE_COLORS.deribit} fill={EXCHANGE_COLORS.deribit} fillOpacity={0.6} />
-            <Area type="monotone" dataKey="others" stackId="1" stroke={EXCHANGE_COLORS.others} fill={EXCHANGE_COLORS.others} fillOpacity={0.6} />
+          <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -10 }}>
+            <XAxis dataKey="time" tick={{ fontSize: 9, fill: "hsl(240, 10%, 46%)" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 9, fill: "hsl(240, 10%, 46%)" }} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={{ backgroundColor: "hsl(240, 17%, 8%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: 4, fontSize: 11 }} />
+            <Area type="monotone" dataKey="indexOpt" stackId="1" fill="hsl(217, 91%, 60%)" fillOpacity={0.3} stroke="hsl(217, 91%, 60%)" strokeWidth={1} name="Index Options" />
+            <Area type="monotone" dataKey="stockOpt" stackId="1" fill="hsl(239, 84%, 67%)" fillOpacity={0.25} stroke="hsl(239, 84%, 67%)" strokeWidth={1} name="Stock Options" />
+            <Area type="monotone" dataKey="indexFut" stackId="1" fill="hsl(142, 71%, 45%)" fillOpacity={0.2} stroke="hsl(142, 71%, 45%)" strokeWidth={1} name="Index Futures" />
+            <Area type="monotone" dataKey="stockFut" stackId="1" fill="hsl(38, 92%, 50%)" fillOpacity={0.2} stroke="hsl(38, 92%, 50%)" strokeWidth={1} name="Stock Futures" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

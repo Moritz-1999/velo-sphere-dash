@@ -5,8 +5,6 @@ import { formatINR, formatPercent, formatLakhsCr } from "@/lib/formatters";
 import { getDirectionalBg } from "@/lib/heatmapColors";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Search } from "lucide-react";
-import { PnLSummaryBar } from "@/components/tradfi/PnLSummaryBar";
-import { PositionCard } from "@/components/tradfi/PositionCard";
 
 const tooltipStyle = { backgroundColor: "hsl(240, 17%, 7%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: "2px", fontSize: "11px" };
 
@@ -15,6 +13,7 @@ function ProgressBar({ current, entry, target, sl, isLong }: { current: number; 
   const pnlFromEntry = current - entry;
   const targetDist = target - entry;
   const slDist = sl - entry;
+
   const targetPct = totalRange > 0 ? Math.max(0, Math.min(100, (Math.abs(pnlFromEntry) / Math.abs(targetDist)) * 100)) : 0;
   const slPct = totalRange > 0 ? Math.max(0, Math.min(100, (Math.abs(pnlFromEntry) / Math.abs(slDist)) * 100)) : 0;
   const isProfit = isLong ? current > entry : current < entry;
@@ -45,7 +44,6 @@ const TradFiPage = () => {
   const journal = useMemo(() => getJournalData(), []);
   const [showClosed, setShowClosed] = useState(true);
   const [showJournal, setShowJournal] = useState(false);
-  const [posView, setPosView] = useState<"table" | "card">("table");
 
   const [orderSymbol, setOrderSymbol] = useState("");
   const [orderSide, setOrderSide] = useState<"BUY" | "SELL">("BUY");
@@ -63,9 +61,6 @@ const TradFiPage = () => {
   return (
     <PageLayout>
       <div className="p-3 space-y-3">
-        {/* P&L Summary Bar — NEW */}
-        <PnLSummaryBar />
-
         {/* Order Panel */}
         <div className="bg-card border border-border p-3">
           <div className="flex items-center gap-2 flex-wrap">
@@ -99,86 +94,69 @@ const TradFiPage = () => {
 
         {/* Active Positions */}
         <div className="bg-card border border-border">
-          <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-            <span className="text-[11px] font-semibold">Active Positions</span>
-            <div className="flex gap-0.5">
-              {(["table", "card"] as const).map(v => (
-                <button key={v} onClick={() => setPosView(v)}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${posView === v ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary"}`}>
-                  {v === "table" ? "Table" : "Card"} View
-                </button>
-              ))}
-            </div>
+          <div className="px-3 py-2 border-b border-border text-[11px] font-semibold">Active Positions</div>
+          <div className="overflow-auto scrollbar-thin">
+            <table className="w-full text-[11px]">
+              <thead className="bg-card">
+                <tr className="text-muted-foreground">
+                  <th className="px-2 py-1.5 text-left font-medium">Symbol</th>
+                  <th className="px-2 py-1.5 text-right font-medium">Qty</th>
+                  <th className="px-2 py-1.5 text-right font-medium">Avg</th>
+                  <th className="px-2 py-1.5 text-right font-medium">LTP</th>
+                  <th className="px-2 py-1.5 text-right font-medium">P&L ₹</th>
+                  <th className="px-2 py-1.5 text-right font-medium">P&L %</th>
+                  <th className="px-2 py-1.5 text-center font-medium">Target</th>
+                  <th className="px-2 py-1.5 text-center font-medium">SL</th>
+                  <th className="px-2 py-1.5 text-right font-medium">R:R</th>
+                  <th className="px-2 py-1.5 text-center font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {positions.map(p => {
+                  const isLong = p.qty > 0;
+                  const pnl = (p.ltp - p.avgPrice) * p.qty;
+                  const pnlPct = ((p.ltp - p.avgPrice) / p.avgPrice) * 100 * (isLong ? 1 : -1);
+                  const rr = Math.abs((p.ltp - p.avgPrice) / (p.avgPrice - p.sl));
+                  return (
+                    <tr key={p.id} className={`border-l-2 ${pnl >= 0 ? "border-l-positive/50" : "border-l-negative/50"} hover:bg-surface-hover`}>
+                      <td className="px-2 py-1.5 font-mono font-medium">
+                        {p.symbol}
+                        <span className={`ml-1 text-[9px] px-1 rounded ${p.type === "CE" ? "bg-positive/15 text-positive" : p.type === "PE" ? "bg-negative/15 text-negative" : "bg-primary/15 text-primary"}`}>{p.type}</span>
+                      </td>
+                      <td className={`px-2 py-1.5 text-right font-mono ${p.qty > 0 ? "text-positive" : "text-negative"}`}>{p.qty > 0 ? "+" : ""}{p.qty}</td>
+                      <td className="px-2 py-1.5 text-right font-mono">₹{p.avgPrice.toLocaleString("en-IN")}</td>
+                      <td className="px-2 py-1.5 text-right font-mono cell-flash">₹{p.ltp.toLocaleString("en-IN")}</td>
+                      <td className="px-2 py-1.5 text-right font-mono" style={{ background: getDirectionalBg(pnl, 20000), color: pnl >= 0 ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
+                        {pnl >= 0 ? "+" : ""}₹{Math.abs(pnl).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      </td>
+                      <td className="px-2 py-1.5 text-right font-mono" style={{ background: getDirectionalBg(pnlPct, 10), color: pnlPct >= 0 ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
+                        {formatPercent(pnlPct)}
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-[9px] font-mono text-muted-foreground">₹{p.target}</span>
+                          <ProgressBar current={p.ltp} entry={p.avgPrice} target={p.target} sl={p.sl} isLong={isLong} />
+                        </div>
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-[9px] font-mono text-muted-foreground">₹{p.sl}</span>
+                          <ProgressBar current={p.ltp} entry={p.avgPrice} target={p.sl} sl={p.target} isLong={!isLong} />
+                        </div>
+                      </td>
+                      <td className={`px-2 py-1.5 text-right font-mono ${rr > 1.5 ? "text-positive" : rr < 1 ? "text-negative" : "text-warning"}`}>{rr.toFixed(1)}</td>
+                      <td className="px-2 py-1.5 text-center">
+                        <div className="flex gap-1 justify-center">
+                          <button className="px-1.5 py-0.5 text-[9px] bg-secondary hover:bg-surface-hover rounded">Trail</button>
+                          <button className="px-1.5 py-0.5 text-[9px] bg-negative/20 text-negative hover:bg-negative/30 rounded">Exit</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-
-          {posView === "card" ? (
-            <div className="p-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {positions.map(p => <PositionCard key={p.id} position={p} />)}
-            </div>
-          ) : (
-            <div className="overflow-auto scrollbar-thin">
-              <table className="w-full text-[11px]">
-                <thead className="bg-card">
-                  <tr className="text-muted-foreground">
-                    <th className="px-2 py-1.5 text-left font-medium">Symbol</th>
-                    <th className="px-2 py-1.5 text-right font-medium">Qty</th>
-                    <th className="px-2 py-1.5 text-right font-medium">Avg</th>
-                    <th className="px-2 py-1.5 text-right font-medium">LTP</th>
-                    <th className="px-2 py-1.5 text-right font-medium">P&L ₹</th>
-                    <th className="px-2 py-1.5 text-right font-medium">P&L %</th>
-                    <th className="px-2 py-1.5 text-center font-medium">Target</th>
-                    <th className="px-2 py-1.5 text-center font-medium">SL</th>
-                    <th className="px-2 py-1.5 text-right font-medium">R:R</th>
-                    <th className="px-2 py-1.5 text-center font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {positions.map(p => {
-                    const isLong = p.qty > 0;
-                    const pnl = (p.ltp - p.avgPrice) * p.qty;
-                    const pnlPct = ((p.ltp - p.avgPrice) / p.avgPrice) * 100 * (isLong ? 1 : -1);
-                    const rr = Math.abs((p.ltp - p.avgPrice) / (p.avgPrice - p.sl));
-                    return (
-                      <tr key={p.id} className={`border-l-2 ${pnl >= 0 ? "border-l-positive/50" : "border-l-negative/50"} hover:bg-surface-hover`}>
-                        <td className="px-2 py-1.5 font-mono font-medium">
-                          {p.symbol}
-                          <span className={`ml-1 text-[9px] px-1 rounded ${p.type === "CE" ? "bg-positive/15 text-positive" : p.type === "PE" ? "bg-negative/15 text-negative" : "bg-primary/15 text-primary"}`}>{p.type}</span>
-                        </td>
-                        <td className={`px-2 py-1.5 text-right font-mono ${p.qty > 0 ? "text-positive" : "text-negative"}`}>{p.qty > 0 ? "+" : ""}{p.qty}</td>
-                        <td className="px-2 py-1.5 text-right font-mono">₹{p.avgPrice.toLocaleString("en-IN")}</td>
-                        <td className="px-2 py-1.5 text-right font-mono cell-flash">₹{p.ltp.toLocaleString("en-IN")}</td>
-                        <td className="px-2 py-1.5 text-right font-mono" style={{ background: getDirectionalBg(pnl, 20000), color: pnl >= 0 ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
-                          {pnl >= 0 ? "+" : ""}₹{Math.abs(pnl).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-                        </td>
-                        <td className="px-2 py-1.5 text-right font-mono" style={{ background: getDirectionalBg(pnlPct, 10), color: pnlPct >= 0 ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
-                          {formatPercent(pnlPct)}
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <div className="flex flex-col items-center gap-0.5">
-                            <span className="text-[9px] font-mono text-muted-foreground">₹{p.target}</span>
-                            <ProgressBar current={p.ltp} entry={p.avgPrice} target={p.target} sl={p.sl} isLong={isLong} />
-                          </div>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <div className="flex flex-col items-center gap-0.5">
-                            <span className="text-[9px] font-mono text-muted-foreground">₹{p.sl}</span>
-                            <ProgressBar current={p.ltp} entry={p.avgPrice} target={p.sl} sl={p.target} isLong={!isLong} />
-                          </div>
-                        </td>
-                        <td className={`px-2 py-1.5 text-right font-mono ${rr > 1.5 ? "text-positive" : rr < 1 ? "text-negative" : "text-warning"}`}>{rr.toFixed(1)}</td>
-                        <td className="px-2 py-1.5 text-center">
-                          <div className="flex gap-1 justify-center">
-                            <button className="px-1.5 py-0.5 text-[9px] bg-secondary hover:bg-surface-hover rounded">Trail</button>
-                            <button className="px-1.5 py-0.5 text-[9px] bg-negative/20 text-negative hover:bg-negative/30 rounded">Exit</button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
 
         {/* Closed Trades */}

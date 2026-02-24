@@ -100,12 +100,4 @@
     100% { opacity: 1; }
   }
   .cell-flash { animation: cell-flash 0.3s ease-out; }
-
-  @keyframes ticker-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .animate-ticker {
-    animation: ticker-scroll 30s linear infinite;
-  }
 }

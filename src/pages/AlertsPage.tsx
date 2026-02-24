@@ -3,8 +3,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { getBreadthData, getAlertTemplates, getActiveAlerts, getAlertTimeline } from "@/data/mockBreadth";
 import { Sparkline } from "@/components/shared/Sparkline";
 import { getDirectionalBg } from "@/lib/heatmapColors";
-import { Bell, BellRing, BellOff, Clock, Plus, Volume2, VolumeX } from "lucide-react";
-import { BreadthChart } from "@/components/alerts/BreadthChart";
+import { Bell, BellRing, BellOff, Clock, Plus } from "lucide-react";
 
 function BreadthCard({ label, value, sub, trend, sparkData, barMode }: { label: string; value: string; sub?: string; trend?: "up" | "down"; sparkData?: number[]; barMode?: { up: number; down: number } }) {
   return (
@@ -38,7 +37,6 @@ const AlertsPage = () => {
     templates.forEach(t => s[t.id] = t.enabled);
     return s;
   });
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const positiveCount = [
     breadth.pctAbove20DMA > 60,
@@ -56,19 +54,7 @@ const AlertsPage = () => {
   return (
     <PageLayout>
       <div className="p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-sm font-semibold">Alerts & Market Breadth</h1>
-          {/* Sound toggle — NEW */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
-              soundEnabled ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
-            }`}
-          >
-            {soundEnabled ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
-            {soundEnabled ? "Sound On" : "Sound Off"}
-          </button>
-        </div>
+        <h1 className="text-sm font-semibold">Alerts & Market Breadth</h1>
 
         {/* Active Alerts */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
@@ -169,9 +155,6 @@ const AlertsPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Breadth Trend Chart — NEW */}
-        <BreadthChart />
       </div>
     </PageLayout>
   );

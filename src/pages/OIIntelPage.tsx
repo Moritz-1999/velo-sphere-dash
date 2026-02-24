@@ -3,10 +3,9 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { getOIPulse, getBuildupData, getScannerMatches, BuildupEntry, ScannerMatch } from "@/data/mockOI";
 import { getNiftyChain, getBankNiftyChain } from "@/data/mockOptionChain";
 import { formatINR, formatPercent } from "@/lib/formatters";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { getDirectionalBg } from "@/lib/heatmapColors";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { TrendingUp, TrendingDown, Target, Blocks, Zap, RefreshCw, Building, Settings2 } from "lucide-react";
-import { OITimeSlider } from "@/components/oi/OITimeSlider";
-import { OIDeltaCards } from "@/components/oi/OIDeltaCards";
 
 function StatCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -115,12 +114,6 @@ const OIIntelPage = () => {
             </div>
           ))}
         </div>
-
-        {/* OI Time Replay — NEW */}
-        <OITimeSlider />
-
-        {/* Delta from Open — NEW */}
-        <OIDeltaCards />
 
         {/* Smart Scanners */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">

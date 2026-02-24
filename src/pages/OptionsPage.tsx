@@ -20,6 +20,14 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 
 const tooltipStyle = { backgroundColor: "hsl(240, 17%, 7%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: "2px", fontSize: "11px" };
 
+// DEX calculation
+function calculateDEX(spot: number, strikes: { strike: number; callOI: number; putOI: number; callDelta: number; putDelta: number }[]) {
+  return strikes.map(s => ({
+    strike: s.strike,
+    dex: (s.callOI * s.callDelta + s.putOI * s.putDelta) * spot * 0.01,
+  }));
+}
+
 const OptionsPage = () => {
   const [index, setIndex] = useState<"NIFTY" | "BANKNIFTY">("NIFTY");
   const [expiry, setExpiry] = useState(0);
@@ -31,6 +39,7 @@ const OptionsPage = () => {
   const maxPutOIStrike = chain.strikes.reduce((a, b) => a.putOI > b.putOI ? a : b).strike;
 
   const gexData = useMemo(() => calculateGEX(chain.spot, chain.strikes), [chain]);
+  const dexData = useMemo(() => calculateDEX(chain.spot, chain.strikes), [chain]);
   const oiByStrike = chain.strikes.map(s => ({ strike: s.strike, callOI: s.callOI, putOI: -s.putOI }));
   const oiChangeByStrike = chain.strikes.map(s => ({ strike: s.strike, callOIChg: s.callOIChange, putOIChg: -s.putOIChange }));
   const ivSmile = chain.strikes.map(s => ({ strike: s.strike, callIV: s.callIV, putIV: s.putIV }));
@@ -61,6 +70,16 @@ const OptionsPage = () => {
     }
     return flows;
   }, [index, atm]);
+
+  // IV Term Structure mock
+  const ivTermStructure = useMemo(() => {
+    const expiries = chain.expiries;
+    return expiries.map((exp, i) => ({
+      expiry: exp.split("-").slice(0, 2).join(" "),
+      iv: chain.atmIV + (i * 0.8) + (Math.random() - 0.5) * 2,
+      isCurrent: i === 0,
+    }));
+  }, [chain]);
 
   return (
     <PageLayout>
@@ -153,8 +172,8 @@ const OptionsPage = () => {
           </table>
         </div>
 
-        {/* 8 Panel Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-3">
+        {/* 10 Panel Cards — 2 rows of 5 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-3">
           {/* OI by Strike */}
           <ChartCard title="OI by Strike">
             <ResponsiveContainer width="100%" height="100%">
@@ -206,6 +225,23 @@ const OptionsPage = () => {
                 <Bar dataKey="gex" radius={[2, 2, 0, 0]}>
                   {gexData.filter((_, i) => i % 2 === 0).map((d, i) => (
                     <Cell key={i} fill={d.gex >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)"} fillOpacity={0.6} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          {/* DEX — NEW */}
+          <ChartCard title="DEX — Delta Exposure">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dexData.filter((_, i) => i % 2 === 0)} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+                <XAxis dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={40} tickFormatter={v => (v / 1e7).toFixed(0)} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [(v / 1e7).toFixed(2) + " Cr"]} />
+                <ReferenceLine y={0} stroke="hsl(240, 29%, 14%)" />
+                <Bar dataKey="dex" radius={[2, 2, 0, 0]}>
+                  {dexData.filter((_, i) => i % 2 === 0).map((d, i) => (
+                    <Cell key={i} fill={d.dex >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)"} fillOpacity={0.6} />
                   ))}
                 </Bar>
               </BarChart>
@@ -268,6 +304,24 @@ const OptionsPage = () => {
                 </tbody>
               </table>
             </div>
+          </ChartCard>
+
+          {/* IV Term Structure — NEW */}
+          <ChartCard title="IV Term Structure">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={ivTermStructure} margin={{ top: 10, right: 10, bottom: 5, left: 5 }}>
+                <XAxis dataKey="expiry" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={30} tickFormatter={v => v.toFixed(0) + "%"} domain={["auto", "auto"]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v.toFixed(1) + "%"]} />
+                <Line type="monotone" dataKey="iv" stroke="hsl(var(--warning))" strokeWidth={2} dot={(props: any) => {
+                  const { cx, cy, payload } = props;
+                  if (payload.isCurrent) {
+                    return <circle cx={cx} cy={cy} r={5} fill="hsl(var(--warning))" stroke="hsl(var(--background))" strokeWidth={2} />;
+                  }
+                  return <circle cx={cx} cy={cy} r={3} fill="hsl(var(--warning))" fillOpacity={0.5} />;
+                }} />
+              </LineChart>
+            </ResponsiveContainer>
           </ChartCard>
 
           {/* Straddle P&L */}

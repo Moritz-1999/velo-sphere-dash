@@ -19,6 +19,8 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 const tooltipStyle = { backgroundColor: "hsl(240, 17%, 7%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: "2px", fontSize: "11px" };
+const barCursorStyle = { fill: "hsl(240, 17%, 12%)", fillOpacity: 0.4 };
+const lineCursorStyle = { stroke: "hsl(240, 29%, 14%)" };
 
 const OptionsPage = () => {
   const [index, setIndex] = useState<"NIFTY" | "BANKNIFTY">("NIFTY");
@@ -161,7 +163,7 @@ const OptionsPage = () => {
               <BarChart data={oiByStrike.filter((_, i) => i % 2 === 0)} layout="vertical" margin={{ left: 5, right: 5 }}>
                 <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} tickFormatter={v => formatQty(Math.abs(v))} />
                 <YAxis type="category" dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={45} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatQty(Math.abs(v))]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={barCursorStyle} formatter={(v: number) => [formatQty(Math.abs(v))]} />
                 <Bar dataKey="callOI" fill="hsl(0, 84%, 60%)" fillOpacity={0.6} />
                 <Bar dataKey="putOI" fill="hsl(142, 71%, 45%)" fillOpacity={0.6} />
               </BarChart>
@@ -174,7 +176,7 @@ const OptionsPage = () => {
               <BarChart data={oiChangeByStrike.filter((_, i) => i % 2 === 0)} layout="vertical" margin={{ left: 5, right: 5 }}>
                 <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} tickFormatter={v => formatQty(Math.abs(v))} />
                 <YAxis type="category" dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={45} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} cursor={barCursorStyle} />
                 <Bar dataKey="callOIChg" fill="hsl(0, 84%, 60%)" fillOpacity={0.5} />
                 <Bar dataKey="putOIChg" fill="hsl(142, 71%, 45%)" fillOpacity={0.5} />
               </BarChart>
@@ -187,7 +189,7 @@ const OptionsPage = () => {
               <LineChart data={ivSmile.filter((_, i) => i % 2 === 0)} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={30} tickFormatter={v => v.toFixed(0)} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} cursor={lineCursorStyle} />
                 <Line type="monotone" dataKey="callIV" stroke="hsl(0, 84%, 60%)" strokeWidth={1.5} dot={false} name="Call IV" />
                 <Line type="monotone" dataKey="putIV" stroke="hsl(142, 71%, 45%)" strokeWidth={1.5} dot={false} name="Put IV" />
                 <ReferenceLine x={atm} stroke="hsl(217, 91%, 60%)" strokeDasharray="3 3" />
@@ -201,7 +203,7 @@ const OptionsPage = () => {
               <BarChart data={gexData.filter((_, i) => i % 2 === 0)} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={40} tickFormatter={v => (v / 1e7).toFixed(0)} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [(v / 1e7).toFixed(2) + " Cr"]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={barCursorStyle} formatter={(v: number) => [(v / 1e7).toFixed(2) + " Cr"]} />
                 <ReferenceLine y={0} stroke="hsl(240, 29%, 14%)" />
                 <Bar dataKey="gex" radius={[2, 2, 0, 0]}>
                   {gexData.filter((_, i) => i % 2 === 0).map((d, i) => (
@@ -276,7 +278,7 @@ const OptionsPage = () => {
               <LineChart data={straddlePnl} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="time" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} minTickGap={30} />
                 <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={40} tickFormatter={v => (v / 1000).toFixed(1) + "K"} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => ["₹" + v.toFixed(0)]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={lineCursorStyle} formatter={(v: number) => ["₹" + v.toFixed(0)]} />
                 <ReferenceLine y={0} stroke="hsl(240, 29%, 14%)" />
                 <Line type="monotone" dataKey="buyerPnl" stroke="hsl(142, 71%, 45%)" strokeWidth={1.5} dot={false} name="Buyer P&L" />
                 <Line type="monotone" dataKey="sellerPnl" stroke="hsl(0, 84%, 60%)" strokeWidth={1.5} dot={false} name="Seller P&L" />

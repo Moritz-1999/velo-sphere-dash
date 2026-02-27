@@ -66,6 +66,7 @@ export function TradingChart({ coin }: TradingChartProps) {
                 tickFormatter={v => formatQty(v)} width={50} domain={[0, "auto"]} />
             )}
             <Tooltip contentStyle={{ backgroundColor: "hsl(240, 17%, 7%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: "2px", fontSize: "11px" }}
+              cursor={{ stroke: "hsl(240, 29%, 14%)" }}
               labelFormatter={v => new Date(v).toLocaleString()} />
             {showVolume && <Bar dataKey="volume" yAxisId="volume" fill="hsl(217, 91%, 60%)" fillOpacity={0.15} />}
             <Area type="monotone" dataKey="close" yAxisId="price" stroke="hsl(217, 91%, 60%)" fill="hsl(217, 91%, 60%)" fillOpacity={0.05} strokeWidth={1.5} dot={false} />

@@ -36,6 +36,7 @@ export function ReturnBuckets() {
             <Tooltip
               contentStyle={{ backgroundColor: "hsl(240, 17%, 8%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: 4, fontSize: 11 }}
               labelStyle={{ color: "hsl(240, 10%, 90%)" }}
+              cursor={{ fill: "hsl(240, 17%, 12%)", fillOpacity: 0.4 }}
             />
             <Bar dataKey="count" radius={[2, 2, 0, 0]}>
               {buckets.map((b, i) => (

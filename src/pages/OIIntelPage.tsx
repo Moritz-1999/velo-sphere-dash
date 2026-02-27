@@ -63,6 +63,7 @@ function BuildupColumn({ title, emoji, entries, color }: { title: string; emoji:
 }
 
 const tooltipStyle = { backgroundColor: "hsl(240, 17%, 7%)", border: "1px solid hsl(240, 29%, 14%)", borderRadius: "2px", fontSize: "11px" };
+const barCursorStyle = { fill: "hsl(240, 17%, 12%)", fillOpacity: 0.4 };
 
 const OIIntelPage = () => {
   const pulse = getOIPulse();
@@ -104,7 +105,7 @@ const OIIntelPage = () => {
                   <BarChart data={b.data} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
                     <XAxis dataKey="strike" tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 8, fill: "hsl(240, 12%, 46%)" }} axisLine={false} tickLine={false} width={45} tickFormatter={v => (v / 1e5).toFixed(0) + "L"} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [(v / 1e5).toFixed(1) + "L"]} />
+                    <Tooltip contentStyle={tooltipStyle} cursor={barCursorStyle} formatter={(v: number) => [(v / 1e5).toFixed(1) + "L"]} />
                     <ReferenceLine y={0} stroke="hsl(240, 29%, 14%)" />
                     <Bar dataKey="callOI" fill="hsl(0, 70%, 55%)" fillOpacity={0.5} name="Call OI" />
                     <Bar dataKey="putOI" fill="hsl(142, 60%, 45%)" fillOpacity={0.5} name="Put OI" />

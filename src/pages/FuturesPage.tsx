@@ -58,6 +58,9 @@ const FuturesPage = () => {
     fontSize: "11px",
   };
 
+  const cursorStyle = { fill: "hsl(240, 17%, 12%)", fillOpacity: 0.4 };
+  const lineCursorStyle = { stroke: "hsl(240, 29%, 14%)" };
+
   const xAxisProps = {
     tick: { fontSize: 9, fill: "hsl(240, 12%, 58%)" },
     axisLine: { stroke: "hsl(240, 21%, 15%)" },
@@ -103,7 +106,7 @@ const FuturesPage = () => {
               <BarChart data={volBreakdown} layout="vertical" margin={{ left: 10, right: 10 }}>
                 <XAxis type="number" {...xAxisProps} tickFormatter={(v) => "$" + formatCompact(v)} />
                 <YAxis type="category" dataKey="exchange" {...yAxisProps} width={60} tick={{ fontSize: 10, fill: "hsl(240, 12%, 58%)" }} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => ["$" + formatCompact(v)]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={cursorStyle} formatter={(v: number) => ["$" + formatCompact(v)]} />
                 <Bar dataKey="value" radius={[0, 3, 3, 0]}>
                   {volBreakdown.map((entry) => (
                     <Cell key={entry.exchange} fill={EXCHANGE_COLORS[entry.exchange as keyof typeof EXCHANGE_COLORS]} />
@@ -119,7 +122,7 @@ const FuturesPage = () => {
               <BarChart data={oiBreakdown} layout="vertical" margin={{ left: 10, right: 10 }}>
                 <XAxis type="number" {...xAxisProps} tickFormatter={(v) => "$" + formatCompact(v)} />
                 <YAxis type="category" dataKey="exchange" {...yAxisProps} width={60} tick={{ fontSize: 10, fill: "hsl(240, 12%, 58%)" }} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => ["$" + formatCompact(v)]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={cursorStyle} formatter={(v: number) => ["$" + formatCompact(v)]} />
                 <Bar dataKey="value" radius={[0, 3, 3, 0]}>
                   {oiBreakdown.map((entry) => (
                     <Cell key={entry.exchange} fill={EXCHANGE_COLORS[entry.exchange as keyof typeof EXCHANGE_COLORS]} />
@@ -135,7 +138,7 @@ const FuturesPage = () => {
               <LineChart data={fundingData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="time" {...xAxisProps} tickFormatter={(v) => new Date(v).toLocaleDateString("en", { month: "short", day: "numeric" })} minTickGap={40} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => v.toFixed(3) + "%"} />
-                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => new Date(v).toLocaleString()} />
+                <Tooltip contentStyle={tooltipStyle} cursor={lineCursorStyle} labelFormatter={(v) => new Date(v).toLocaleString()} />
                 <Line type="monotone" dataKey="binance" stroke={EXCHANGE_COLORS.binance} strokeWidth={1.5} dot={false} />
                 <Line type="monotone" dataKey="bybit" stroke={EXCHANGE_COLORS.bybit} strokeWidth={1.5} dot={false} />
                 <Line type="monotone" dataKey="okx" stroke={EXCHANGE_COLORS.okx} strokeWidth={1.5} dot={false} />
@@ -150,7 +153,7 @@ const FuturesPage = () => {
               <AreaChart data={oiData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="time" {...xAxisProps} tickFormatter={(v) => new Date(v).toLocaleDateString("en", { month: "short", day: "numeric" })} minTickGap={40} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => "$" + formatCompact(v)} />
-                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(v)]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={lineCursorStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(v)]} />
                 <Area type="monotone" dataKey="binance" stackId="1" stroke={EXCHANGE_COLORS.binance} fill={EXCHANGE_COLORS.binance} fillOpacity={0.5} />
                 <Area type="monotone" dataKey="bybit" stackId="1" stroke={EXCHANGE_COLORS.bybit} fill={EXCHANGE_COLORS.bybit} fillOpacity={0.5} />
                 <Area type="monotone" dataKey="okx" stackId="1" stroke={EXCHANGE_COLORS.okx} fill={EXCHANGE_COLORS.okx} fillOpacity={0.5} />
@@ -165,7 +168,7 @@ const FuturesPage = () => {
               <BarChart data={liqData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="time" {...xAxisProps} tickFormatter={(v) => new Date(v).toLocaleDateString("en", { month: "short", day: "numeric" })} minTickGap={40} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => "$" + formatCompact(Math.abs(v))} />
-                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(Math.abs(v))]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={cursorStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(Math.abs(v))]} />
                 <Bar dataKey="shortLiq" fill="hsl(0, 84%, 60%)" fillOpacity={0.7} />
                 <Bar dataKey="longLiq" fill="hsl(142, 71%, 45%)" fillOpacity={0.7} />
               </BarChart>
@@ -178,7 +181,7 @@ const FuturesPage = () => {
               <AreaChart data={volumeData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="time" {...xAxisProps} tickFormatter={(v) => new Date(v).toLocaleDateString("en", { month: "short", day: "numeric" })} minTickGap={40} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => "$" + formatCompact(v)} />
-                <Tooltip contentStyle={tooltipStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(v)]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={lineCursorStyle} labelFormatter={(v) => new Date(v).toLocaleString()} formatter={(v: number) => ["$" + formatCompact(v)]} />
                 <Area type="monotone" dataKey="binance" stackId="1" stroke={EXCHANGE_COLORS.binance} fill={EXCHANGE_COLORS.binance} fillOpacity={0.5} />
                 <Area type="monotone" dataKey="bybit" stackId="1" stroke={EXCHANGE_COLORS.bybit} fill={EXCHANGE_COLORS.bybit} fillOpacity={0.5} />
                 <Area type="monotone" dataKey="okx" stackId="1" stroke={EXCHANGE_COLORS.okx} fill={EXCHANGE_COLORS.okx} fillOpacity={0.5} />
@@ -192,7 +195,7 @@ const FuturesPage = () => {
               <BarChart data={hourlyReturns} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="hour" {...xAxisProps} tickFormatter={(v) => `${v}:00`} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => v.toFixed(2) + "%"} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v.toFixed(3) + "%", "Avg Return"]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={cursorStyle} formatter={(v: number) => [v.toFixed(3) + "%", "Avg Return"]} />
                 <Bar dataKey="avgReturn" radius={[2, 2, 0, 0]}>
                   {hourlyReturns.map((entry, i) => (
                     <Cell key={i} fill={entry.avgReturn >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)"} fillOpacity={0.7} />
@@ -208,7 +211,7 @@ const FuturesPage = () => {
               <BarChart data={dailyReturns} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <XAxis dataKey="day" {...xAxisProps} />
                 <YAxis {...yAxisProps} tickFormatter={(v) => v.toFixed(2) + "%"} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v.toFixed(3) + "%", "Avg Return"]} />
+                <Tooltip contentStyle={tooltipStyle} cursor={cursorStyle} formatter={(v: number) => [v.toFixed(3) + "%", "Avg Return"]} />
                 <Bar dataKey="avgReturn" radius={[2, 2, 0, 0]}>
                   {dailyReturns.map((entry, i) => (
                     <Cell key={i} fill={entry.avgReturn >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)"} fillOpacity={0.7} />

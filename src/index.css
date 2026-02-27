@@ -100,4 +100,11 @@
     100% { opacity: 1; }
   }
   .cell-flash { animation: cell-flash 0.3s ease-out; }
+
+  /* Recharts hover cursor overrides — replace default white/light fills with dark theme colors */
+  .recharts-rectangle.recharts-tooltip-cursor { fill: hsl(240 17% 12% / 0.4) !important; }
+  .recharts-curve.recharts-tooltip-cursor { stroke: hsl(var(--border)) !important; }
+  .recharts-sector.recharts-tooltip-cursor { fill: hsl(240 17% 12% / 0.4) !important; }
+  .recharts-dot[stroke='#fff'] { stroke: transparent !important; }
+  .recharts-sector[stroke='#fff'] { stroke: transparent !important; }
 }

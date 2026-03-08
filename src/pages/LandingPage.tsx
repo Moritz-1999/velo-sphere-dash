@@ -589,10 +589,10 @@ function LiveOrderFlowPanel() {
           {trades.map((t, i) => (
             <motion.div
               key={`${t.time}-${t.sym}-${t.qty}`}
-              initial={{ opacity: 0, x: -20, height: 0 }}
+              initial={{ opacity: 0, x: -10, height: 0 }}
               animate={{ opacity: 1, x: 0, height: "auto" }}
-              exit={{ opacity: 0, x: 20, height: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, x: 10, height: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
               className="flex items-center gap-1 text-[8px] font-mono"
             >
               <span className={`w-6 ${t.action === "BUY" ? "text-positive" : "text-negative"}`}>{t.action}</span>

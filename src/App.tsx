@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import ChartPage from "./pages/ChartPage";
 import OptionsPage from "./pages/OptionsPage";
 import MarketPage from "./pages/MarketPage";
@@ -20,7 +21,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/market" replace />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/chart" element={<ChartPage />} />
           <Route path="/options" element={<OptionsPage />} />
           <Route path="/market" element={<MarketPage />} />

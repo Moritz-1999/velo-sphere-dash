@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { HeatmapTable, HeatmapColumn } from "@/components/shared/HeatmapTable";
 import { HeatmapCell } from "@/components/shared/HeatmapCell";
 import { getDOMData, DOMData } from "@/data/mockDOM";
@@ -7,7 +7,22 @@ import { formatQty, formatPercent } from "@/lib/formatters";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export function DOMImbalanceTable() {
-  const data = useMemo(() => getDOMData(), []);
+  const [data, setData] = useState(() => getDOMData());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setData(prev => prev.map(d => ({
+        ...d,
+        bidQtyTotal: d.bidQtyTotal + Math.floor((Math.random() - 0.5) * d.bidQtyTotal * 0.02),
+        askQtyTotal: d.askQtyTotal + Math.floor((Math.random() - 0.5) * d.askQtyTotal * 0.02),
+        imbalancePct: d.imbalancePct + (Math.random() - 0.5) * 1.5,
+        spreadTicks: Math.max(1, d.spreadTicks + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1 : -1) : 0)),
+        top5BidPct: Math.max(5, Math.min(95, d.top5BidPct + (Math.random() - 0.5) * 2)),
+        largeOrders: Math.max(0, d.largeOrders + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0)),
+      })));
+    }, 600);
+    return () => clearInterval(timer);
+  }, []);
 
   const columns: HeatmapColumn<DOMData>[] = [
     {

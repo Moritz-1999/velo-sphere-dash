@@ -100,7 +100,7 @@ function HFTDataFlow() {
         speed,
         delay: Math.random() * 8,
         isBuy,
-        opacity: 0.04 + Math.random() * 0.08,
+        opacity: 0.10 + Math.random() * 0.12,
       };
     });
   }, []);

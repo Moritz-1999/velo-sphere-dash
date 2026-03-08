@@ -1,12 +1,32 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { HeatmapTable, HeatmapColumn } from "@/components/shared/HeatmapTable";
 import { HeatmapCell } from "@/components/shared/HeatmapCell";
 import { getSectors, SectorData } from "@/data/mockSectors";
 import { getDirectionalBg, getIntensityBg, getDMABg, getCellTextColor } from "@/lib/heatmapColors";
 import { formatLakhsCr, formatPercent } from "@/lib/formatters";
 
+function tickSector(s: SectorData): SectorData {
+  return {
+    ...s,
+    changePct: s.changePct + (Math.random() - 0.5) * 0.06,
+    fiiFlow: s.fiiFlow + (Math.random() - 0.5) * 2e6,
+    diiFlow: s.diiFlow + (Math.random() - 0.5) * 2e6,
+    avgIV: Math.max(5, s.avgIV + (Math.random() - 0.5) * 0.2),
+    oiChangePct: s.oiChangePct + (Math.random() - 0.5) * 0.05,
+    pctAbove20DMA: Math.max(0, Math.min(100, s.pctAbove20DMA + (Math.random() - 0.5) * 0.5)),
+    pctAbove200DMA: Math.max(0, Math.min(100, s.pctAbove200DMA + (Math.random() - 0.5) * 0.3)),
+  };
+}
+
 export function SectorFlowTable() {
-  const sectors = useMemo(() => getSectors(), []);
+  const [sectors, setSectors] = useState(() => getSectors());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSectors(prev => prev.map(tickSector));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const columns: HeatmapColumn<SectorData>[] = [
     {

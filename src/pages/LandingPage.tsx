@@ -78,60 +78,133 @@ function TickerTape() {
   );
 }
 
-/* ─── Floating Math Symbols ─── */
+/* ─── Order Flow Footprint Background ─── */
 function HFTDataFlow() {
-  const symbols = useMemo(() => {
-    const chars = [
-      "∑", "∫", "∂", "∞", "π", "Δ", "√", "≈", "≠", "±",
-      "∏", "∇", "⊕", "⊗", "λ", "θ", "φ", "σ", "μ", "α",
-      "β", "γ", "ε", "ω", "ℝ", "ℂ", "ℕ", "∈", "⊂", "∪",
-      "∩", "⇒", "⇔", "∀", "∃", "¬", "∧", "∨", "⊥", "⊤",
-      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-      "1.618", "2.718", "3.14", "0.01", "99.9", "42",
-      "%", "÷", "×", "=", "+", "−", "≥", "≤", ">", "<",
-      "f(x)", "dx", "dy", "lim", "log", "sin", "cos",
-    ];
-    return Array.from({ length: 55 }).map((_, i) => {
-      const char = chars[Math.floor(Math.random() * chars.length)];
-      const top = 5 + Math.random() * 90;
-      const isNearCenter = top > 25 && top < 65;
-      const speed = isNearCenter ? 2 + Math.random() * 3 : 8 + Math.random() * 14;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let w = 0, h = 0;
+
+    const resize = () => {
+      w = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      h = canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const realW = () => canvas.offsetWidth;
+    const realH = () => canvas.offsetHeight;
+
+    // Generate streaming order-flow "prints"
+    type Print = {
+      x: number; y: number; speed: number; text: string;
+      color: string; opacity: number; size: number; dir: number;
+    };
+
+    const syms = ["RELIANCE","NIFTY","SBIN","TCS","HDFCBANK","INFY","BAJFIN","ICICI","TATAMTRS","ITC"];
+    const sides = ["BUY","SELL","B","S","BID","ASK"];
+
+    const makePrint = (forceX?: number): Print => {
+      const kind = Math.random();
+      let text: string;
+      let color: string;
+
+      if (kind < 0.28) {
+        // Price level with volume — footprint style
+        const price = (18000 + Math.random() * 8000).toFixed(kind < 0.14 ? 0 : 1);
+        const vol = Math.floor(10 + Math.random() * 990);
+        const isBid = Math.random() > 0.45;
+        text = isBid ? `${vol} × ${price}` : `${price} × ${vol}`;
+        color = isBid ? "142,71%,45%" : "0,84%,60%";
+      } else if (kind < 0.48) {
+        // Raw trade print
+        const sym = syms[Math.floor(Math.random() * syms.length)];
+        const side = sides[Math.floor(Math.random() * sides.length)];
+        const qty = Math.floor(50 + Math.random() * 2000);
+        text = `${sym} ${side} ${qty}`;
+        color = side === "BUY" || side === "B" || side === "BID" ? "142,71%,45%" : "0,84%,60%";
+      } else if (kind < 0.65) {
+        // Volume delta bar
+        const delta = Math.floor(-500 + Math.random() * 1000);
+        const bar = delta > 0 ? "▓".repeat(Math.min(Math.abs(delta) / 80, 8)) : "░".repeat(Math.min(Math.abs(delta) / 80, 8));
+        text = `Δ${delta > 0 ? "+" : ""}${delta} ${bar}`;
+        color = delta > 0 ? "142,71%,45%" : "0,84%,60%";
+      } else if (kind < 0.78) {
+        // Imbalance ratio
+        const ratio = (0.3 + Math.random() * 2.4).toFixed(2);
+        const side = parseFloat(ratio) > 1 ? "BID" : "ASK";
+        text = `IMB ${ratio}x ${side}`;
+        color = parseFloat(ratio) > 1 ? "142,71%,45%" : "0,84%,60%";
+      } else {
+        // Cluster volume at level
+        const price = (22000 + Math.random() * 4000).toFixed(0);
+        const bidVol = Math.floor(Math.random() * 400);
+        const askVol = Math.floor(Math.random() * 400);
+        text = `${bidVol}|${price}|${askVol}`;
+        color = bidVol > askVol ? "142,71%,45%" : "0,84%,60%";
+      }
+
+      const dir = Math.random() > 0.5 ? 1 : -1;
+      const rW = realW();
       return {
-        char,
-        top: `${top}%`,
-        speed,
-        delay: Math.random() * 10,
-        opacity: isNearCenter ? 0.15 + Math.random() * 0.15 : 0.08 + Math.random() * 0.1,
-        size: isNearCenter ? 14 + Math.random() * 6 : 11 + Math.random() * 5,
-        direction: i % 2 === 0 ? 1 : -1,
+        x: forceX !== undefined ? forceX : (dir > 0 ? -100 : rW + 100),
+        y: 20 + Math.random() * (realH() - 40),
+        speed: 0.3 + Math.random() * 1.2,
+        text,
+        color,
+        opacity: 0.06 + Math.random() * 0.14,
+        size: 10 + Math.random() * 3,
+        dir,
       };
-    });
+    };
+
+    const prints: Print[] = Array.from({ length: 60 }, () => makePrint(Math.random() * realW()));
+
+    const draw = () => {
+      const rW = realW();
+      const rH = realH();
+      ctx.clearRect(0, 0, rW, rH);
+
+      for (let i = 0; i < prints.length; i++) {
+        const p = prints[i];
+        p.x += p.speed * p.dir;
+
+        // Reset when off-screen
+        if ((p.dir > 0 && p.x > rW + 120) || (p.dir < 0 && p.x < -120)) {
+          const np = makePrint();
+          prints[i] = np;
+          continue;
+        }
+
+        ctx.font = `${p.size}px ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace`;
+        ctx.fillStyle = `hsla(${p.color}, ${p.opacity})`;
+        ctx.fillText(p.text, p.x, p.y);
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {symbols.map((s, i) => (
-        <motion.span
-          key={i}
-          className="absolute font-mono text-foreground/30 select-none"
-          style={{
-            top: s.top,
-            fontSize: `${s.size}px`,
-            opacity: s.opacity,
-          }}
-          initial={{ x: s.direction > 0 ? "-5vw" : "105vw" }}
-          animate={{ x: s.direction > 0 ? "105vw" : "-5vw" }}
-          transition={{
-            duration: s.speed,
-            repeat: Infinity,
-            delay: s.delay,
-            ease: "linear",
-          }}
-        >
-          {s.char}
-        </motion.span>
-      ))}
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 1 }}
+    />
   );
 }
 

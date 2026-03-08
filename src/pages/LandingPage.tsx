@@ -100,7 +100,7 @@ function HFTDataFlow() {
         speed,
         delay: Math.random() * 8,
         isBuy,
-        opacity: 0.04 + Math.random() * 0.08,
+        opacity: 0.10 + Math.random() * 0.12,
       };
     });
   }, []);
@@ -150,7 +150,7 @@ function HFTDataFlow() {
         <motion.div
           key={`v-${i}`}
           className="absolute text-[8px] font-mono leading-[12px] whitespace-nowrap"
-          style={{ left: t.left, opacity: 0.04 }}
+          style={{ left: t.left, opacity: 0.10 }}
           initial={{ y: "-50%" }}
           animate={{ y: "100vh" }}
           transition={{
@@ -931,7 +931,7 @@ const LandingPage = () => {
                       style={{
                         top: `${8 + i * 12}%`,
                         color: i % 2 === 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
-                        opacity: 0.04,
+                        opacity: 0.10,
                       }}
                       animate={{ x: i % 2 === 0 ? ["-30%", "100%"] : ["100%", "-30%"] }}
                       transition={{ duration: 6 + i * 0.8, repeat: Infinity, ease: "linear" }}

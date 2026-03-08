@@ -931,7 +931,7 @@ const LandingPage = () => {
                       style={{
                         top: `${8 + i * 12}%`,
                         color: i % 2 === 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
-                        opacity: 0.04,
+                        opacity: 0.10,
                       }}
                       animate={{ x: i % 2 === 0 ? ["-30%", "100%"] : ["100%", "-30%"] }}
                       transition={{ duration: 6 + i * 0.8, repeat: Infinity, ease: "linear" }}

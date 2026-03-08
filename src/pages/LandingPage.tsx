@@ -442,10 +442,10 @@ function LiveWatchlistPanel() {
     const timer = setInterval(() => {
       setStocks(prev => prev.map(s => ({
         ...s,
-        price: s.price + (Math.random() - 0.48) * s.price * 0.002,
-        chg: s.chg + (Math.random() - 0.5) * 0.15,
+        price: s.price + (Math.random() - 0.48) * s.price * 0.003,
+        chg: s.chg + (Math.random() - 0.5) * 0.12,
       })));
-    }, 600);
+    }, 250);
     return () => clearInterval(timer);
   }, []);
 
@@ -465,10 +465,10 @@ function LiveWatchlistPanel() {
             <span className="font-mono text-foreground/70">{s.sym}</span>
             <motion.span
               className="font-mono text-foreground/60 text-[9px] text-right w-16"
-              key={s.price.toFixed(0)}
+              key={s.price.toFixed(1)}
               initial={{ color: s.chg >= 0 ? "#22c55e" : "#ef4444" }}
               animate={{ color: "#a1a1aa" }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               ₹{s.price.toFixed(1)}
             </motion.span>
@@ -493,10 +493,10 @@ function LiveChartPanel() {
       setPoints(prev => {
         const next = [...prev.slice(1)];
         const last = prev[prev.length - 1];
-        next.push(Math.max(15, Math.min(85, last + (Math.random() - 0.48) * 8)));
+        next.push(Math.max(15, Math.min(85, last + (Math.random() - 0.48) * 6)));
         return next;
       });
-    }, 400);
+    }, 150);
     return () => clearInterval(timer);
   }, []);
 
@@ -570,7 +570,7 @@ function LiveOrderFlowPanel() {
         };
         return [newTrade, ...prev.slice(0, 5)];
       });
-    }, 700);
+    }, 350);
     return () => clearInterval(timer);
   }, []);
 
@@ -589,10 +589,10 @@ function LiveOrderFlowPanel() {
           {trades.map((t, i) => (
             <motion.div
               key={`${t.time}-${t.sym}-${t.qty}`}
-              initial={{ opacity: 0, x: -20, height: 0 }}
+              initial={{ opacity: 0, x: -10, height: 0 }}
               animate={{ opacity: 1, x: 0, height: "auto" }}
-              exit={{ opacity: 0, x: 20, height: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, x: 10, height: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
               className="flex items-center gap-1 text-[8px] font-mono"
             >
               <span className={`w-6 ${t.action === "BUY" ? "text-positive" : "text-negative"}`}>{t.action}</span>

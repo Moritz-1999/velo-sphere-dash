@@ -644,7 +644,24 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* ── NAV removed ── */}
+      {/* ── TOP LOGO ── */}
+      <motion.div
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center h-14 bg-background/70 backdrop-blur-2xl border-b border-border/10"
+      >
+        <div className="flex items-center gap-2.5">
+          <motion.div
+            className="w-7 h-7 rounded bg-primary flex items-center justify-center"
+            whileHover={{ rotate: 180, scale: 1.1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Activity className="h-4 w-4 text-primary-foreground" />
+          </motion.div>
+          <span className="text-sm font-bold tracking-tight">GRAVITY</span>
+        </div>
+      </motion.div>
 
       {/* ── HERO ── */}
       <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">

@@ -100,8 +100,8 @@ function HFTDataFlow() {
         top: `${top}%`,
         speed,
         delay: Math.random() * 10,
-        opacity: isNearCenter ? 0.06 + Math.random() * 0.08 : 0.03 + Math.random() * 0.05,
-        size: isNearCenter ? 11 + Math.random() * 5 : 9 + Math.random() * 4,
+        opacity: isNearCenter ? 0.15 + Math.random() * 0.15 : 0.08 + Math.random() * 0.1,
+        size: isNearCenter ? 14 + Math.random() * 6 : 11 + Math.random() * 5,
         direction: i % 2 === 0 ? 1 : -1,
       };
     });

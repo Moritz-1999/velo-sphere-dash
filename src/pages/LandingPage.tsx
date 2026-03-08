@@ -645,24 +645,6 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* ── TOP LOGO ── */}
-      <motion.div
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center h-16 bg-background/70 backdrop-blur-2xl border-b border-border/10"
-      >
-        <div className="flex items-center gap-3">
-          <motion.img
-            src={gravityLogo}
-            alt="Gravity Logo"
-            className="h-10 w-10 object-contain"
-            whileHover={{ rotate: 180, scale: 1.1 }}
-            transition={{ duration: 0.4 }}
-          />
-          <span className="text-2xl font-extrabold tracking-tight">GRAVITY</span>
-        </div>
-      </motion.div>
 
       {/* ── HERO ── */}
       <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">

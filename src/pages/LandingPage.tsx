@@ -660,7 +660,7 @@ const LandingPage = () => {
             whileHover={{ rotate: 180, scale: 1.1 }}
             transition={{ duration: 0.4 }}
           />
-          <span className="text-xl font-bold tracking-tight">GRAVITY</span>
+          <span className="text-2xl font-extrabold tracking-tight">GRAVITY</span>
         </div>
       </motion.div>
 

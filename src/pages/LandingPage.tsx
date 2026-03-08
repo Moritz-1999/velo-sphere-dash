@@ -483,6 +483,187 @@ function TestimonialCard({ quote, name, role, delay = 0 }: {
   );
 }
 
+/* ─── Live Watchlist Panel ─── */
+function LiveWatchlistPanel() {
+  const initialStocks = [
+    { sym: "RELIANCE", price: 2487.3, chg: 1.24 },
+    { sym: "HDFCBANK", price: 1634.2, chg: -0.42 },
+    { sym: "TCS", price: 3942.8, chg: 2.31 },
+    { sym: "INFY", price: 1567.9, chg: 1.78 },
+    { sym: "SBIN", price: 631.4, chg: -0.87 },
+    { sym: "BAJFINANCE", price: 6234.1, chg: 0.95 },
+  ];
+  const [stocks, setStocks] = useState(initialStocks);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStocks(prev => prev.map(s => ({
+        ...s,
+        price: s.price + (Math.random() - 0.48) * s.price * 0.002,
+        chg: s.chg + (Math.random() - 0.5) * 0.15,
+      })));
+    }, 600);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-card/80 p-3 h-48 relative z-10">
+      <div className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+        WATCHLIST
+        <motion.span
+          className="w-1 h-1 rounded-full bg-positive ml-auto"
+          animate={{ opacity: [1, 0.2, 1] }}
+          transition={{ duration: 0.6, repeat: Infinity }}
+        />
+      </div>
+      <div className="space-y-0.5">
+        {stocks.map((s) => (
+          <div key={s.sym} className="flex items-center justify-between text-[10px] py-0.5">
+            <span className="font-mono text-foreground/70">{s.sym}</span>
+            <motion.span
+              className="font-mono text-foreground/60 text-[9px]"
+              key={s.price.toFixed(0)}
+              initial={{ color: s.chg >= 0 ? "#22c55e" : "#ef4444" }}
+              animate={{ color: "#a1a1aa" }}
+              transition={{ duration: 0.3 }}
+            >
+              ₹{s.price.toFixed(1)}
+            </motion.span>
+            <span className={`font-mono text-[9px] ${s.chg >= 0 ? "text-positive" : "text-negative"}`}>
+              {s.chg >= 0 ? "+" : ""}{s.chg.toFixed(2)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Live Chart Panel ─── */
+function LiveChartPanel() {
+  const [points, setPoints] = useState(() =>
+    Array.from({ length: 40 }).map((_, i) => 50 + Math.sin(i * 0.3) * 20 + Math.random() * 10)
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPoints(prev => {
+        const next = [...prev.slice(1)];
+        const last = prev[prev.length - 1];
+        next.push(Math.max(15, Math.min(85, last + (Math.random() - 0.48) * 8)));
+        return next;
+      });
+    }, 400);
+    return () => clearInterval(timer);
+  }, []);
+
+  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${(i / (points.length - 1)) * 400},${p}`).join(" ");
+  const areaD = pathD + ` L400,100 L0,100 Z`;
+  const isUp = points[points.length - 1] < points[points.length - 2];
+
+  return (
+    <div className="bg-card/80 p-3 col-span-2 h-40 relative z-10">
+      <div className="text-[10px] font-semibold text-muted-foreground mb-1 flex items-center gap-2">
+        NIFTY 50 · 1s
+        <motion.span
+          className="text-[8px] font-mono text-positive"
+          key={points[points.length - 1].toFixed(0)}
+          initial={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
+        >
+          {(24500 + (50 - points[points.length - 1]) * 5).toFixed(2)}
+        </motion.span>
+        <motion.span
+          className="w-1 h-1 rounded-full bg-primary ml-auto"
+          animate={{ opacity: [1, 0.2, 1] }}
+          transition={{ duration: 0.4, repeat: Infinity }}
+        />
+      </div>
+      <svg viewBox="0 0 400 100" className="w-full h-[calc(100%-18px)]" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="liveChartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill="url(#liveChartGrad)" />
+        <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+        {/* Live dot at end */}
+        <circle
+          cx={400}
+          cy={points[points.length - 1]}
+          r="3"
+          fill="hsl(var(--primary))"
+        >
+          <animate attributeName="r" values="2;4;2" dur="1s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+    </div>
+  );
+}
+
+/* ─── Live Order Flow Panel ─── */
+function LiveOrderFlowPanel() {
+  const [trades, setTrades] = useState(() => 
+    Array.from({ length: 6 }).map(() => ({
+      sym: ["NIFTY", "BNKNIFTY", "RELIANCE", "SBIN", "TCS", "INFY"][Math.floor(Math.random() * 6)],
+      action: Math.random() > 0.5 ? "BUY" : "SELL",
+      qty: Math.floor(100 + Math.random() * 5000),
+      price: (500 + Math.random() * 3000).toFixed(2),
+      time: `${Math.floor(9 + Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
+    }))
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTrades(prev => {
+        const newTrade = {
+          sym: ["NIFTY", "BNKNIFTY", "RELIANCE", "SBIN", "TCS", "INFY", "HDFC", "BAJFIN"][Math.floor(Math.random() * 8)],
+          action: Math.random() > 0.45 ? "BUY" : "SELL",
+          qty: Math.floor(100 + Math.random() * 5000),
+          price: (500 + Math.random() * 3000).toFixed(2),
+          time: new Date().toLocaleTimeString("en-IN", { hour12: false }),
+        };
+        return [newTrade, ...prev.slice(0, 5)];
+      });
+    }, 700);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-card/80 p-3 h-40 relative z-10 overflow-hidden">
+      <div className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+        ORDER FLOW
+        <motion.span
+          className="w-1 h-1 rounded-full bg-warning ml-auto"
+          animate={{ opacity: [1, 0.2, 1] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+        />
+      </div>
+      <div className="space-y-0.5">
+        <AnimatePresence mode="popLayout">
+          {trades.map((t, i) => (
+            <motion.div
+              key={`${t.time}-${t.sym}-${t.qty}`}
+              initial={{ opacity: 0, x: -20, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: "auto" }}
+              exit={{ opacity: 0, x: 20, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1 text-[8px] font-mono"
+            >
+              <span className={`w-6 ${t.action === "BUY" ? "text-positive" : "text-negative"}`}>{t.action}</span>
+              <span className="text-foreground/60 flex-1">{t.sym}</span>
+              <span className="text-foreground/40">{t.qty}</span>
+              <span className="text-foreground/50">₹{t.price}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Animated Gradient Text ─── */
 function GradientText({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -739,120 +920,84 @@ const LandingPage = () => {
                   transition={{ duration: 1, repeat: Infinity }}
                 />
               </div>
-              {/* Grid of mock panels */}
-              <div className="grid grid-cols-3 gap-px bg-border/20 p-px">
-                {/* Panel 1 - Mini heatmap */}
-                <div className="bg-card/80 p-3 col-span-2 h-48">
+              {/* Grid of mock panels — LIVE HFT style */}
+              <div className="grid grid-cols-3 gap-px bg-border/20 p-px relative overflow-hidden">
+                {/* Mini HFT data stream inside terminal */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <motion.div
+                      key={`term-stream-${i}`}
+                      className="absolute whitespace-nowrap font-mono text-[7px] tracking-wider"
+                      style={{
+                        top: `${8 + i * 12}%`,
+                        color: i % 2 === 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
+                        opacity: 0.04,
+                      }}
+                      animate={{ x: i % 2 === 0 ? ["-30%", "100%"] : ["100%", "-30%"] }}
+                      transition={{ duration: 6 + i * 0.8, repeat: Infinity, ease: "linear" }}
+                    >
+                      {`${["FILL", "BID", "ASK", "TRADE", "CANCEL", "MODIFY", "IOC", "MKT"][i % 8]} ${["RELIANCE", "SBIN", "TCS", "INFY", "HDFC", "BAJFIN", "NIFTY", "BNKN"][i % 8]} ${(1000 + Math.random() * 3000).toFixed(2)} x${Math.floor(100 + Math.random() * 5000)}`}
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Panel 1 - Live Heatmap with flashing cells */}
+                <div className="bg-card/80 p-3 col-span-2 h-48 relative z-10">
                   <div className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                     MARKET HEATMAP
                     <motion.span
                       className="w-1 h-1 rounded-full bg-positive"
                       animate={{ opacity: [0, 1, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      transition={{ duration: 0.8, repeat: Infinity }}
                     />
+                    <span className="text-[8px] text-muted-foreground/40 ml-auto font-mono">LIVE</span>
                   </div>
                   <div className="grid grid-cols-8 gap-1 h-[calc(100%-20px)]">
                     {Array.from({ length: 32 }).map((_, i) => {
-                      const isPositive = Math.random() > 0.45;
-                      const intensity = Math.random() * 0.6 + 0.15;
+                      const isPositive = i % 3 !== 1;
+                      const baseIntensity = 0.15 + (i % 5) * 0.1;
                       return (
                         <motion.div
                           key={i}
                           className="rounded-sm"
-                          initial={{ opacity: 0, scale: 0.5 }}
+                          initial={{ opacity: 0, scale: 0.3 }}
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.5 + i * 0.04, type: "spring", stiffness: 200 }}
+                          transition={{ delay: 0.3 + i * 0.03, type: "spring", stiffness: 300 }}
+                          animate={{
+                            backgroundColor: isPositive
+                              ? [
+                                  `hsl(142, 71%, 45%, ${baseIntensity})`,
+                                  `hsl(142, 71%, 45%, ${baseIntensity + 0.15})`,
+                                  `hsl(142, 71%, 45%, ${baseIntensity})`,
+                                ]
+                              : [
+                                  `hsl(0, 84%, 60%, ${baseIntensity})`,
+                                  `hsl(0, 84%, 60%, ${baseIntensity + 0.15})`,
+                                  `hsl(0, 84%, 60%, ${baseIntensity})`,
+                                ],
+                          }}
+                          // @ts-ignore
+                          transition2={{ duration: 1.5 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 3 }}
                           style={{
                             background: isPositive
-                              ? `hsl(var(--positive) / ${intensity})`
-                              : `hsl(var(--negative) / ${intensity})`,
+                              ? `hsl(var(--positive) / ${baseIntensity})`
+                              : `hsl(var(--negative) / ${baseIntensity})`,
                           }}
                         />
                       );
                     })}
                   </div>
                 </div>
-                {/* Panel 2 - Watchlist */}
-                <div className="bg-card/80 p-3 h-48">
-                  <div className="text-[10px] font-semibold text-muted-foreground mb-2">WATCHLIST</div>
-                  <div className="space-y-1">
-                    {[
-                      { sym: "RELIANCE", c: "+1.24%", pos: true },
-                      { sym: "HDFCBANK", c: "-0.42%", pos: false },
-                      { sym: "TCS", c: "+2.31%", pos: true },
-                      { sym: "INFY", c: "+1.78%", pos: true },
-                      { sym: "SBIN", c: "-0.87%", pos: false },
-                      { sym: "BAJFINANCE", c: "+0.95%", pos: true },
-                    ].map((s, i) => (
-                      <motion.div
-                        key={s.sym}
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.8 + i * 0.1, ease: "easeOut" }}
-                        className="flex items-center justify-between text-[10px] py-0.5"
-                      >
-                        <span className="font-mono text-foreground/70">{s.sym}</span>
-                        <span className={`font-mono ${s.pos ? "text-positive" : "text-negative"}`}>{s.c}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-                {/* Panel 3 - Chart line */}
-                <div className="bg-card/80 p-3 col-span-2 h-40">
-                  <div className="text-[10px] font-semibold text-muted-foreground mb-2">NIFTY 50 · 5min</div>
-                  <svg viewBox="0 0 400 100" className="w-full h-[calc(100%-20px)]">
-                    <defs>
-                      <linearGradient id="chartGradient2" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <motion.path
-                      d="M0,70 Q30,65 60,55 T120,48 T180,58 T240,35 T300,30 T360,25 T400,22"
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="2.5"
-                      initial={{ pathLength: 0 }}
-                      whileInView={{ pathLength: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 2.5, delay: 0.5, ease: "easeInOut" }}
-                    />
-                    <motion.path
-                      d="M0,70 Q30,65 60,55 T120,48 T180,58 T240,35 T300,30 T360,25 T400,22 L400,100 L0,100 Z"
-                      fill="url(#chartGradient2)"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 0.4 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1, delay: 2.5 }}
-                    />
-                  </svg>
-                </div>
-                {/* Panel 4 - OI data */}
-                <div className="bg-card/80 p-3 h-40">
-                  <div className="text-[10px] font-semibold text-muted-foreground mb-2">OI PULSE</div>
-                  <div className="space-y-2">
-                    {[
-                      { label: "Nifty PCR", val: "1.24", color: "text-positive" },
-                      { label: "Max Pain", val: "₹24,500", color: "text-foreground" },
-                      { label: "VIX", val: "13.45", color: "text-warning" },
-                      { label: "FII L/S", val: "0.72", color: "text-negative" },
-                    ].map((m, i) => (
-                      <motion.div
-                        key={m.label}
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 1 + i * 0.15 }}
-                        className="flex justify-between text-[10px]"
-                      >
-                        <span className="text-muted-foreground">{m.label}</span>
-                        <span className={`font-mono ${m.color}`}>{m.val}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+
+                {/* Panel 2 - Live Watchlist with streaming prices */}
+                <LiveWatchlistPanel />
+
+                {/* Panel 3 - Live Chart with moving line */}
+                <LiveChartPanel />
+
+                {/* Panel 4 - Live Order Flow */}
+                <LiveOrderFlowPanel />
               </div>
             </div>
           </motion.div>

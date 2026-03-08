@@ -150,7 +150,7 @@ function HFTDataFlow() {
         <motion.div
           key={`v-${i}`}
           className="absolute text-[8px] font-mono leading-[12px] whitespace-nowrap"
-          style={{ left: t.left, opacity: 0.04 }}
+          style={{ left: t.left, opacity: 0.10 }}
           initial={{ y: "-50%" }}
           animate={{ y: "100vh" }}
           transition={{

@@ -829,10 +829,10 @@ const LandingPage = () => {
           {/* Speed Counters */}
           <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 max-w-3xl mx-auto">
             {[
-              { value: 500, suffix: "+", label: "F&O Stocks", icon: <BarChart3 className="h-4 w-4" />, color: "text-primary" },
-              { value: 50, suffix: "ms", label: "Avg Latency", icon: <Gauge className="h-4 w-4" />, color: "text-positive" },
-              { value: 10000, suffix: "+", label: "Ticks/sec", icon: <Cpu className="h-4 w-4" />, color: "text-warning" },
-              { value: 99.9, suffix: "%", label: "Uptime", decimals: 1, icon: <Radio className="h-4 w-4" />, color: "text-negative" },
+              { value: 500, suffix: "+", label: "F&O Stocks", icon: <BarChart3 className="h-4 w-4" />, color: "text-muted-foreground" },
+              { value: 50, suffix: "ms", label: "Avg Latency", icon: <Gauge className="h-4 w-4" />, color: "text-muted-foreground" },
+              { value: 10000, suffix: "+", label: "Ticks/sec", icon: <Cpu className="h-4 w-4" />, color: "text-muted-foreground" },
+              { value: 99.9, suffix: "%", label: "Uptime", decimals: 1, icon: <Radio className="h-4 w-4" />, color: "text-muted-foreground" },
             ].map((s, i) => (
               <motion.div
                 key={i}

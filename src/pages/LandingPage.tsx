@@ -499,7 +499,6 @@ const LandingPage = () => {
         <GlowOrbs />
         <OrbitingRings />
         <DataRain />
-        <ScanLine />
 
         {/* Grid */}
         <div className="absolute inset-0 pointer-events-none">

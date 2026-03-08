@@ -530,7 +530,7 @@ const LandingPage = () => {
           </motion.div>
 
           {/* Title */}
-          <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-[0.95] mb-6">
+          <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
             <span className="text-foreground">Trade at the</span>
             <br />
             <GradientText>Speed of Data</GradientText>

@@ -537,7 +537,7 @@ const LandingPage = () => {
           </motion.h1>
 
           {/* Subtitle */}
-          <motion.p variants={itemVariants} className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
+          <motion.p variants={itemVariants} className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
             India's fastest institutional-grade terminal. Tick-by-tick data, OI intelligence,
             options flow — all in one blazing-fast interface.
           </motion.p>

@@ -132,10 +132,9 @@ function OrbitingRings() {
           }}
           animate={{ rotate: 360 }}
           transition={{
-            duration: 20 + i * 10,
+            duration: i % 2 === 0 ? (20 + i * 10) : -(20 + i * 10),
             repeat: Infinity,
             ease: "linear",
-            direction: i % 2 === 0 ? "normal" : "reverse",
           }}
         >
           {/* Orbiting dot */}

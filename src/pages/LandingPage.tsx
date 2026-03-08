@@ -442,10 +442,10 @@ function LiveWatchlistPanel() {
     const timer = setInterval(() => {
       setStocks(prev => prev.map(s => ({
         ...s,
-        price: s.price + (Math.random() - 0.48) * s.price * 0.002,
-        chg: s.chg + (Math.random() - 0.5) * 0.15,
+        price: s.price + (Math.random() - 0.48) * s.price * 0.003,
+        chg: s.chg + (Math.random() - 0.5) * 0.12,
       })));
-    }, 600);
+    }, 250);
     return () => clearInterval(timer);
   }, []);
 

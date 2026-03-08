@@ -30,7 +30,7 @@ export function Navbar() {
 
   return (
     <nav className="h-11 border-b border-border bg-card flex items-center px-4 shrink-0">
-      <Link to="/chart" className="flex items-center gap-1.5 mr-8">
+      <Link to="/" className="flex items-center gap-1.5 mr-8">
         <Zap className="h-4 w-4 text-primary" />
         <span className="font-semibold text-sm tracking-tight text-foreground">NEXUS</span>
       </Link>

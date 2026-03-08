@@ -460,10 +460,10 @@ function LiveWatchlistPanel() {
       </div>
       <div className="space-y-0.5">
         {stocks.map((s) => (
-          <div key={s.sym} className="flex items-center justify-between text-[10px] py-0.5">
+          <div key={s.sym} className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[10px] py-0.5">
             <span className="font-mono text-foreground/70">{s.sym}</span>
             <motion.span
-              className="font-mono text-foreground/60 text-[9px]"
+              className="font-mono text-foreground/60 text-[9px] text-right w-16"
               key={s.price.toFixed(0)}
               initial={{ color: s.chg >= 0 ? "#22c55e" : "#ef4444" }}
               animate={{ color: "#a1a1aa" }}
@@ -471,7 +471,7 @@ function LiveWatchlistPanel() {
             >
               ₹{s.price.toFixed(1)}
             </motion.span>
-            <span className={`font-mono text-[9px] ${s.chg >= 0 ? "text-positive" : "text-negative"}`}>
+            <span className={`font-mono text-[9px] text-right w-12 ${s.chg >= 0 ? "text-positive" : "text-negative"}`}>
               {s.chg >= 0 ? "+" : ""}{s.chg.toFixed(2)}%
             </span>
           </div>

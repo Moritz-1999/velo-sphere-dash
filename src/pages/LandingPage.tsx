@@ -465,10 +465,10 @@ function LiveWatchlistPanel() {
             <span className="font-mono text-foreground/70">{s.sym}</span>
             <motion.span
               className="font-mono text-foreground/60 text-[9px] text-right w-16"
-              key={s.price.toFixed(0)}
+              key={s.price.toFixed(1)}
               initial={{ color: s.chg >= 0 ? "#22c55e" : "#ef4444" }}
               animate={{ color: "#a1a1aa" }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             >
               ₹{s.price.toFixed(1)}
             </motion.span>

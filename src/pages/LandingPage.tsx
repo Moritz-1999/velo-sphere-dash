@@ -575,7 +575,7 @@ const LandingPage = () => {
         {/* Background layers */}
         <GlowOrbs />
         {/* OrbitingRings removed */}
-        <DataRain />
+        <HFTDataFlow />
 
         {/* Grid */}
         <div className="absolute inset-0 pointer-events-none">

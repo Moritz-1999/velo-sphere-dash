@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { HeatmapTable, HeatmapColumn } from "@/components/shared/HeatmapTable";
 import { HeatmapCell } from "@/components/shared/HeatmapCell";
 import { getBigTrades, BigTrade } from "@/data/mockBigTrades";
@@ -7,7 +7,20 @@ import { formatCompactINR, formatPrice } from "@/lib/formatters";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export function BigTradeTracker() {
-  const trades = useMemo(() => getBigTrades(), []);
+  const [trades, setTrades] = useState(() => getBigTrades());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTrades(prev => prev.map(t => ({
+        ...t,
+        price: t.price + (Math.random() - 0.48) * t.price * 0.001,
+        qty: t.qty + Math.floor((Math.random() - 0.5) * 50),
+        value: t.value + (Math.random() - 0.5) * t.value * 0.005,
+        deltaFromVwap: t.deltaFromVwap + (Math.random() - 0.5) * 0.05,
+      })));
+    }, 500);
+    return () => clearInterval(timer);
+  }, []);
 
   const columns: HeatmapColumn<BigTrade>[] = [
     {

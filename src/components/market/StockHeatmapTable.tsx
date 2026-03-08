@@ -1,12 +1,37 @@
-import { useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HeatmapTable, HeatmapColumn } from "@/components/shared/HeatmapTable";
 import { HeatmapCell } from "@/components/shared/HeatmapCell";
 import { getStocks, StockData } from "@/data/mockStocks";
 import { getDirectionalBg, getIntensityBg, getPCRBg, getDeliveryBg, getCellTextColor } from "@/lib/heatmapColors";
 import { formatPrice, formatPercent, formatVolume } from "@/lib/formatters";
 
+function tickStock(s: StockData): StockData {
+  const priceDelta = (Math.random() - 0.48) * s.ltp * 0.0015;
+  const newLtp = s.ltp + priceDelta;
+  const newChange = s.change + priceDelta;
+  const newChangePct = (newChange / (s.ltp - s.change)) * 100;
+  return {
+    ...s,
+    ltp: newLtp,
+    change: newChange,
+    changePct: newChangePct,
+    oi: s.oi + (Math.random() - 0.5) * s.oi * 0.002,
+    oiChangePct: s.oiChangePct + (Math.random() - 0.5) * 0.08,
+    iv: Math.max(5, s.iv + (Math.random() - 0.5) * 0.3),
+    pcr: Math.max(0.1, s.pcr + (Math.random() - 0.5) * 0.015),
+    volume: s.volume + Math.floor(Math.random() * s.volume * 0.003),
+  };
+}
+
 export function StockHeatmapTable() {
-  const stocks = useMemo(() => getStocks().filter(s => s.sector !== "Index"), []);
+  const [stocks, setStocks] = useState(() => getStocks().filter(s => s.sector !== "Index"));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setStocks(prev => prev.map(tickStock));
+    }, 800);
+    return () => clearInterval(timer);
+  }, []);
 
   const columns: HeatmapColumn<StockData>[] = [
     {

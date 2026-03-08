@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { HeatmapTable, HeatmapColumn } from "@/components/shared/HeatmapTable";
 import { HeatmapCell } from "@/components/shared/HeatmapCell";
 import { getVolumeProfiles, VolumeProfileData } from "@/data/mockVolumeProfile";
@@ -7,7 +7,19 @@ import { formatPrice, formatLakhsCr } from "@/lib/formatters";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export function VolumeProfileTable() {
-  const data = useMemo(() => getVolumeProfiles(), []);
+  const [data, setData] = useState(() => getVolumeProfiles());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setData(prev => prev.map(d => ({
+        ...d,
+        ltpVsPocPct: d.ltpVsPocPct + (Math.random() - 0.5) * 0.1,
+        cumulativeDelta: d.cumulativeDelta + (Math.random() - 0.5) * 5e4,
+        bigTradeCount: Math.max(0, d.bigTradeCount + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0)),
+      })));
+    }, 900);
+    return () => clearInterval(timer);
+  }, []);
 
   const columns: HeatmapColumn<VolumeProfileData>[] = [
     {

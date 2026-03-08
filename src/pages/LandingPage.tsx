@@ -570,7 +570,7 @@ function LiveOrderFlowPanel() {
         };
         return [newTrade, ...prev.slice(0, 5)];
       });
-    }, 700);
+    }, 350);
     return () => clearInterval(timer);
   }, []);
 

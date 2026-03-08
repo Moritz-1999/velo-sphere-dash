@@ -647,7 +647,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
       {/* ── HERO ── */}
-      <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">
+      <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center">
         {/* Background layers */}
         <GlowOrbs />
         {/* OrbitingRings removed */}

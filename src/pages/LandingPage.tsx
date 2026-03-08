@@ -77,41 +77,118 @@ function TickerTape() {
   );
 }
 
-/* ─── Data Rain Effect ─── */
-function DataRain() {
-  const columns = useMemo(() =>
-    Array.from({ length: 20 }).map((_, i) => ({
-      left: `${(i / 20) * 100}%`,
-      delay: Math.random() * 5,
-      duration: 3 + Math.random() * 4,
-      chars: Array.from({ length: 8 + Math.floor(Math.random() * 12) }).map(() =>
-        Math.random() > 0.5
-          ? (Math.random() * 100).toFixed(2)
-          : ["₹", "%", "OI", "CE", "PE", "BUY", "SELL", "24K", "50K"][Math.floor(Math.random() * 9)]
-      ),
+/* ─── HFT Data Flow ─── */
+function HFTDataFlow() {
+  const streams = useMemo(() => {
+    const symbols = ["RELIANCE", "SBIN", "TCS", "HDFCBANK", "INFY", "BAJFINANCE", "NIFTY", "BANKNIFTY", "TATAMOTORS", "ICICIBANK", "ADANIENT", "HCLTECH", "WIPRO", "ONGC", "ITC"];
+    const actions = ["BUY", "SELL", "BID", "ASK", "FILL", "CANCEL"];
+    const exchanges = ["NSE", "BSE"];
+    
+    return Array.from({ length: 30 }).map((_, i) => {
+      const sym = symbols[Math.floor(Math.random() * symbols.length)];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      const exch = exchanges[Math.floor(Math.random() * exchanges.length)];
+      const price = (500 + Math.random() * 4000).toFixed(2);
+      const qty = Math.floor(Math.random() * 5000 + 50);
+      const isBuy = action === "BUY" || action === "BID" || action === "FILL";
+      const speed = 3 + Math.random() * 6;
+      const top = 5 + (i / 30) * 90;
+      
+      return {
+        text: `${exch}:${sym} ${action} ${qty} @ ₹${price}`,
+        top: `${top}%`,
+        speed,
+        delay: Math.random() * 8,
+        isBuy,
+        opacity: 0.04 + Math.random() * 0.08,
+      };
+    });
+  }, []);
+
+  // Vertical fast ticks (price ladder style)
+  const ticks = useMemo(() =>
+    Array.from({ length: 15 }).map((_, i) => ({
+      left: `${5 + (i / 15) * 90}%`,
+      delay: Math.random() * 4,
+      speed: 1.5 + Math.random() * 2.5,
+      values: Array.from({ length: 20 }).map(() => {
+        const v = (18000 + Math.random() * 8000).toFixed(Math.random() > 0.5 ? 0 : 2);
+        return { val: v, positive: Math.random() > 0.45 };
+      }),
     })),
   []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
-      {columns.map((col, i) => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Horizontal streaming trades */}
+      {streams.map((s, i) => (
         <motion.div
-          key={i}
-          className="absolute top-0 text-[9px] font-mono text-primary leading-[14px] whitespace-nowrap"
-          style={{ left: col.left }}
-          initial={{ y: "-100%" }}
-          animate={{ y: "100vh" }}
+          key={`h-${i}`}
+          className="absolute whitespace-nowrap font-mono"
+          style={{
+            top: s.top,
+            fontSize: "10px",
+            letterSpacing: "0.05em",
+            color: s.isBuy ? "hsl(var(--positive))" : "hsl(var(--negative))",
+            opacity: s.opacity,
+          }}
+          initial={{ x: i % 2 === 0 ? "-100%" : "100vw" }}
+          animate={{ x: i % 2 === 0 ? "100vw" : "-100%" }}
           transition={{
-            duration: col.duration,
+            duration: s.speed,
             repeat: Infinity,
-            delay: col.delay,
+            delay: s.delay,
             ease: "linear",
           }}
         >
-          {col.chars.map((c, j) => (
-            <div key={j} className="opacity-80">{c}</div>
+          {s.text}
+        </motion.div>
+      ))}
+
+      {/* Vertical fast price ticks */}
+      {ticks.map((t, i) => (
+        <motion.div
+          key={`v-${i}`}
+          className="absolute text-[8px] font-mono leading-[12px] whitespace-nowrap"
+          style={{ left: t.left, opacity: 0.04 }}
+          initial={{ y: "-50%" }}
+          animate={{ y: "100vh" }}
+          transition={{
+            duration: t.speed,
+            repeat: Infinity,
+            delay: t.delay,
+            ease: "linear",
+          }}
+        >
+          {t.values.map((v, j) => (
+            <div key={j} style={{ color: v.positive ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
+              {v.val}
+            </div>
           ))}
         </motion.div>
+      ))}
+
+      {/* Quick flash dots simulating executions */}
+      {Array.from({ length: 12 }).map((_, i) => (
+        <motion.div
+          key={`dot-${i}`}
+          className="absolute w-1 h-1 rounded-full"
+          style={{
+            left: `${10 + Math.random() * 80}%`,
+            top: `${10 + Math.random() * 80}%`,
+            background: i % 2 === 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
+          }}
+          animate={{
+            opacity: [0, 0.6, 0],
+            scale: [0, 1.5, 0],
+          }}
+          transition={{
+            duration: 0.8 + Math.random() * 1.2,
+            repeat: Infinity,
+            delay: Math.random() * 5,
+            repeatDelay: 1 + Math.random() * 4,
+          }}
+        />
       ))}
     </div>
   );

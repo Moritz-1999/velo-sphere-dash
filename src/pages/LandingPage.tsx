@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   Zap, BarChart3, Activity, Shield, Globe, Clock, ArrowRight, Check,
   TrendingUp, Eye, Brain, Bell, ChevronDown, Star, Users, Building2,
   Gauge, Cpu, Radio, MousePointerClick
 } from "lucide-react";
 
-/* ─── Animated Counter ─── */
+/* ─── Animated Counter with blur-to-sharp ─── */
 function AnimatedCounter({ end, suffix = "", prefix = "", duration = 2, decimals = 0 }: {
   end: number; suffix?: string; prefix?: string; duration?: number; decimals?: number;
 }) {
   const [count, setCount] = useState(0);
+  const [done, setDone] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   useEffect(() => {
     if (!isInView) return;
@@ -21,49 +22,53 @@ function AnimatedCounter({ end, suffix = "", prefix = "", duration = 2, decimals
     const step = end / (duration * 60);
     const timer = setInterval(() => {
       start += step;
-      if (start >= end) { setCount(end); clearInterval(timer); }
+      if (start >= end) { setCount(end); setDone(true); clearInterval(timer); }
       else setCount(start);
     }, 1000 / 60);
     return () => clearInterval(timer);
   }, [isInView, end, duration]);
 
   return (
-    <span ref={ref} className="font-mono tabular-nums">
+    <motion.span
+      ref={ref}
+      className="font-mono tabular-nums inline-block"
+      animate={{ filter: done ? "blur(0px)" : "blur(1px)" }}
+      transition={{ duration: 0.3 }}
+    >
       {prefix}{decimals > 0 ? count.toFixed(decimals) : Math.floor(count).toLocaleString("en-IN")}{suffix}
-    </span>
+    </motion.span>
   );
 }
 
 /* ─── Ticker Tape ─── */
 const tickerItems = [
-  { sym: "RELIANCE", chg: "+1.24%", positive: true },
-  { sym: "SBIN", chg: "-0.87%", positive: false },
-  { sym: "TCS", chg: "+2.31%", positive: true },
-  { sym: "HDFCBANK", chg: "-0.42%", positive: false },
-  { sym: "INFY", chg: "+1.78%", positive: true },
-  { sym: "TATAMOTORS", chg: "-3.12%", positive: false },
-  { sym: "BAJFINANCE", chg: "+0.95%", positive: true },
-  { sym: "ICICIBANK", chg: "+0.63%", positive: true },
-  { sym: "NIFTY 50", chg: "+0.34%", positive: true },
-  { sym: "BANKNIFTY", chg: "-0.21%", positive: false },
-  { sym: "HINDUNILVR", chg: "+0.18%", positive: true },
-  { sym: "ITC", chg: "+1.05%", positive: true },
-  { sym: "ONGC", chg: "-1.56%", positive: false },
-  { sym: "ADANIENT", chg: "+4.21%", positive: true },
+  { sym: "RELIANCE", price: "₹2,487.30", chg: "+1.24%", positive: true },
+  { sym: "SBIN", price: "₹631.44", chg: "-0.87%", positive: false },
+  { sym: "TCS", price: "₹3,942.77", chg: "+2.31%", positive: true },
+  { sym: "HDFCBANK", price: "₹1,634.20", chg: "-0.42%", positive: false },
+  { sym: "INFY", price: "₹1,567.85", chg: "+1.78%", positive: true },
+  { sym: "TATAMOTORS", price: "₹657.30", chg: "-3.12%", positive: false },
+  { sym: "BAJFINANCE", price: "₹6,234.10", chg: "+0.95%", positive: true },
+  { sym: "ICICIBANK", price: "₹1,089.65", chg: "+0.63%", positive: true },
+  { sym: "NIFTY 50", price: "24,532.40", chg: "+0.34%", positive: true },
+  { sym: "BANKNIFTY", price: "52,187.55", chg: "-0.21%", positive: false },
+  { sym: "ITC", price: "₹442.15", chg: "+1.05%", positive: true },
+  { sym: "ADANIENT", price: "₹2,876.90", chg: "+4.21%", positive: true },
 ];
 
 function TickerTape() {
-  const doubled = [...tickerItems, ...tickerItems];
+  const tripled = [...tickerItems, ...tickerItems, ...tickerItems];
   return (
-    <div className="w-full overflow-hidden border-y border-border/30 bg-black/40 backdrop-blur-sm">
+    <div className="w-full overflow-hidden border-y border-border/20 bg-background/60 backdrop-blur-md">
       <motion.div
-        className="flex gap-8 py-2 whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="flex gap-10 py-2.5 whitespace-nowrap"
+        animate={{ x: ["0%", "-33.33%"] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
       >
-        {doubled.map((t, i) => (
-          <span key={i} className="text-xs font-mono flex items-center gap-2 opacity-60">
-            <span className="text-foreground/70">{t.sym}</span>
+        {tripled.map((t, i) => (
+          <span key={i} className="text-[11px] font-mono flex items-center gap-2">
+            <span className="text-foreground/50">{t.sym}</span>
+            <span className="text-foreground/30">{t.price}</span>
             <span className={t.positive ? "text-positive" : "text-negative"}>{t.chg}</span>
           </span>
         ))}
@@ -72,85 +77,161 @@ function TickerTape() {
   );
 }
 
-/* ─── Floating Particles ─── */
-function FloatingParticles() {
+/* ─── Data Rain Effect ─── */
+function DataRain() {
+  const columns = useMemo(() =>
+    Array.from({ length: 20 }).map((_, i) => ({
+      left: `${(i / 20) * 100}%`,
+      delay: Math.random() * 5,
+      duration: 3 + Math.random() * 4,
+      chars: Array.from({ length: 8 + Math.floor(Math.random() * 12) }).map(() =>
+        Math.random() > 0.5
+          ? (Math.random() * 100).toFixed(2)
+          : ["₹", "%", "OI", "CE", "PE", "BUY", "SELL", "24K", "50K"][Math.floor(Math.random() * 9)]
+      ),
+    })),
+  []);
+
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 40 }).map((_, i) => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.07]">
+      {columns.map((col, i) => (
         <motion.div
           key={i}
-          className="absolute rounded-full"
-          style={{
-            width: Math.random() * 3 + 1,
-            height: Math.random() * 3 + 1,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            background: i % 3 === 0
-              ? "hsl(var(--primary))"
-              : i % 3 === 1
-              ? "hsl(var(--positive))"
-              : "hsl(var(--negative))",
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.1, 0.5, 0.1],
-          }}
+          className="absolute top-0 text-[9px] font-mono text-primary leading-[14px] whitespace-nowrap"
+          style={{ left: col.left }}
+          initial={{ y: "-100%" }}
+          animate={{ y: "100vh" }}
           transition={{
-            duration: Math.random() * 4 + 3,
+            duration: col.duration,
             repeat: Infinity,
-            delay: Math.random() * 3,
-            ease: "easeInOut",
+            delay: col.delay,
+            ease: "linear",
           }}
-        />
+        >
+          {col.chars.map((c, j) => (
+            <div key={j} className="opacity-80">{c}</div>
+          ))}
+        </motion.div>
       ))}
     </div>
   );
 }
 
-/* ─── Grid Background ─── */
-function GridBackground() {
+/* ─── Orbiting Rings ─── */
+function OrbitingRings() {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)
-          `,
-          backgroundSize: "60px 60px",
-        }}
-      />
-      {/* Radial glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-[120px]" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-positive/3 blur-[100px]" />
-      <div className="absolute top-1/2 right-0 w-[300px] h-[300px] rounded-full bg-negative/3 blur-[80px]" />
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      {[300, 450, 600].map((size, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full border"
+          style={{
+            width: size,
+            height: size,
+            borderColor: `hsl(var(--primary) / ${0.06 - i * 0.015})`,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: i % 2 === 0 ? (20 + i * 10) : -(20 + i * 10),
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          {/* Orbiting dot */}
+          <motion.div
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              top: -4,
+              left: "50%",
+              marginLeft: -4,
+              background: i === 0 ? "hsl(var(--primary))" : i === 1 ? "hsl(var(--positive))" : "hsl(var(--warning))",
+              boxShadow: `0 0 12px ${i === 0 ? "hsl(var(--primary))" : i === 1 ? "hsl(var(--positive))" : "hsl(var(--warning))"}`,
+            }}
+          />
+        </motion.div>
+      ))}
     </div>
   );
 }
 
-/* ─── Data Stream Lines ─── */
-function DataStreamLines() {
+/* ─── Pulsing Glow Orbs ─── */
+function GlowOrbs() {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute h-px"
-          style={{
-            top: `${15 + i * 15}%`,
-            left: 0,
-            right: 0,
-            background: `linear-gradient(90deg, transparent, hsl(var(--primary) / 0.15), transparent)`,
-          }}
-          animate={{ opacity: [0, 0.6, 0], x: ["-100%", "0%", "100%"] }}
-          transition={{
-            duration: 4 + i * 0.5,
-            repeat: Infinity,
-            delay: i * 0.8,
-            ease: "easeInOut",
-          }}
-        />
+      <motion.div
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.12) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--positive) / 0.06) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      <motion.div
+        className="absolute top-1/3 right-1/4 w-[350px] h-[350px] rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--negative) / 0.05) 0%, transparent 70%)" }}
+        animate={{ scale: [1.1, 0.9, 1.1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+    </div>
+  );
+}
+
+/* ─── Scanning Line ─── */
+function ScanLine() {
+  return (
+    <motion.div
+      className="absolute left-0 right-0 h-px pointer-events-none"
+      style={{
+        background: "linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.4) 20%, hsl(var(--primary) / 0.6) 50%, hsl(var(--primary) / 0.4) 80%, transparent 100%)",
+        boxShadow: "0 0 20px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1)",
+      }}
+      animate={{ top: ["0%", "100%"] }}
+      transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+    />
+  );
+}
+
+/* ─── Live Price Flicker ─── */
+function LivePriceFlicker() {
+  const [prices, setPrices] = useState([
+    { sym: "NIFTY", val: 24532, chg: 0.34 },
+    { sym: "BANKNIFTY", val: 52187, chg: -0.21 },
+    { sym: "RELIANCE", val: 2487, chg: 1.24 },
+  ]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPrices(prev => prev.map(p => ({
+        ...p,
+        val: p.val + (Math.random() - 0.48) * p.val * 0.001,
+        chg: p.chg + (Math.random() - 0.5) * 0.1,
+      })));
+    }, 800);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-6">
+      {prices.map(p => (
+        <div key={p.sym} className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground font-mono">{p.sym}</span>
+          <motion.span
+            className="text-xs font-mono font-semibold text-foreground"
+            key={p.val.toFixed(1)}
+            initial={{ color: p.chg >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)" }}
+            animate={{ color: "hsl(240, 10%, 90%)" }}
+            transition={{ duration: 0.4 }}
+          >
+            {p.val.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+          </motion.span>
+          <span className={`text-[10px] font-mono ${p.chg >= 0 ? "text-positive" : "text-negative"}`}>
+            {p.chg >= 0 ? "+" : ""}{p.chg.toFixed(2)}%
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -164,9 +245,9 @@ function Section({ children, className = "", id }: { children: React.ReactNode; 
     <motion.section
       ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, ease: "easeOut" }}
+      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={`relative ${className}`}
     >
       {children}
@@ -183,18 +264,36 @@ function FeatureCard({ icon, title, desc, color, delay = 0 }: {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay }}
-      className="group relative bg-card/50 border border-border/50 p-6 hover:border-primary/30 transition-all duration-500 hover:bg-card/80"
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="group relative bg-card/40 border border-border/40 p-6 hover:border-primary/40 transition-all duration-500 overflow-hidden"
     >
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: `radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${color}08, transparent)` }}
+      {/* Animated border glow on hover */}
+      <motion.div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+        style={{
+          background: `radial-gradient(300px circle at 50% 0%, ${color}12, transparent 70%)`,
+        }}
+      />
+      {/* Shimmer line */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}40, transparent)` }}
+        initial={{ x: "-100%" }}
+        whileHover={{ x: "100%" }}
+        transition={{ duration: 0.6 }}
       />
       <div className="relative z-10">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ background: `${color}15`, color }}>
+        <motion.div
+          className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+          style={{ background: `${color}12`, color }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
           {icon}
-        </div>
+        </motion.div>
         <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
         <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
       </div>
@@ -211,36 +310,56 @@ function PricingCard({ name, price, period, features, popular, cta, delay = 0 }:
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay }}
-      className={`relative p-6 border ${popular ? "border-primary/50 bg-primary/5" : "border-border/50 bg-card/30"} flex flex-col`}
+      transition={{ duration: 0.6, delay }}
+      whileHover={{ y: -6, transition: { duration: 0.25 } }}
+      className={`relative p-6 border flex flex-col overflow-hidden ${popular ? "border-primary/50 bg-primary/5" : "border-border/40 bg-card/30"}`}
     >
       {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest">
-          Most Popular
-        </div>
-      )}
-      <div className="text-xs text-muted-foreground uppercase tracking-wider mb-3">{name}</div>
-      <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-3xl font-mono font-bold text-foreground">{price}</span>
-        <span className="text-xs text-muted-foreground">{period}</span>
-      </div>
-      <div className="border-t border-border/30 my-4" />
-      <div className="space-y-2.5 flex-1">
-        {features.map((f, i) => (
-          <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-            <Check className="h-3.5 w-3.5 text-positive mt-0.5 shrink-0" />
-            <span>{f}</span>
+        <>
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-b from-primary/8 to-transparent"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest">
+            Most Popular
           </div>
-        ))}
+        </>
+      )}
+      <div className="relative z-10">
+        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-3">{name}</div>
+        <div className="flex items-baseline gap-1 mb-1">
+          <span className="text-3xl font-mono font-bold text-foreground">{price}</span>
+          <span className="text-xs text-muted-foreground">{period}</span>
+        </div>
+        <div className="border-t border-border/30 my-4" />
+        <div className="space-y-2.5 flex-1">
+          {features.map((f, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: delay + 0.1 + i * 0.05 }}
+              className="flex items-start gap-2 text-xs text-muted-foreground"
+            >
+              <Check className="h-3.5 w-3.5 text-positive mt-0.5 shrink-0" />
+              <span>{f}</span>
+            </motion.div>
+          ))}
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={`mt-6 w-full py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${popular
+            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+            : "border border-border/50 text-foreground hover:border-primary/50 hover:bg-primary/5"
+          }`}
+        >
+          {cta}
+        </motion.button>
       </div>
-      <button className={`mt-6 w-full py-2.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${popular
-        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-        : "border border-border/50 text-foreground hover:border-primary/50 hover:bg-primary/5"
-      }`}>
-        {cta}
-      </button>
     </motion.div>
   );
 }
@@ -254,14 +373,28 @@ function TestimonialCard({ quote, name, role, delay = 0 }: {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay }}
-      className="bg-card/30 border border-border/30 p-5"
+      initial={{ opacity: 0, y: 30, rotateX: 10 }}
+      animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+      transition={{ duration: 0.6, delay }}
+      whileHover={{ y: -3 }}
+      className="bg-card/30 border border-border/30 p-5 relative overflow-hidden"
     >
+      <motion.div
+        className="absolute top-0 left-0 w-full h-px"
+        style={{ background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent)" }}
+        animate={{ x: ["-100%", "100%"] }}
+        transition={{ duration: 3, repeat: Infinity, delay: delay * 3 }}
+      />
       <div className="flex gap-0.5 mb-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} className="h-3 w-3 fill-warning text-warning" />
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: delay + 0.3 + i * 0.08, type: "spring", stiffness: 500 }}
+          >
+            <Star className="h-3 w-3 fill-warning text-warning" />
+          </motion.div>
         ))}
       </div>
       <p className="text-xs text-foreground/80 leading-relaxed mb-4 italic">"{quote}"</p>
@@ -273,151 +406,203 @@ function TestimonialCard({ quote, name, role, delay = 0 }: {
   );
 }
 
+/* ─── Animated Gradient Text ─── */
+function GradientText({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <motion.span
+      className={`bg-clip-text text-transparent bg-[length:200%_auto] ${className}`}
+      style={{
+        backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--positive)), hsl(var(--primary)), hsl(var(--warning)), hsl(var(--primary)))",
+      }}
+      animate={{ backgroundPosition: ["0% center", "200% center"] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+    >
+      {children}
+    </motion.span>
+  );
+}
+
 /* ─── MAIN LANDING PAGE ─── */
 const LandingPage = () => {
   const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.12], [1, 0.92]);
+  const heroY = useTransform(scrollYProgress, [0, 0.12], [0, -60]);
+
+  // Staggered hero entrance
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: 0.15, delayChildren: 0.3 },
+    },
+  };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
+    visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  } as const;
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* ── NAV ── */}
       <motion.nav
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-border/20 bg-background/80 backdrop-blur-xl"
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+        className="fixed top-0 left-0 right-0 z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl"
       >
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
+          <div className="flex items-center gap-2.5">
+            <motion.div
+              className="w-7 h-7 rounded bg-primary flex items-center justify-center"
+              whileHover={{ rotate: 180, scale: 1.1 }}
+              transition={{ duration: 0.4 }}
+            >
               <Activity className="h-4 w-4 text-primary-foreground" />
-            </div>
+            </motion.div>
             <span className="text-sm font-bold tracking-tight">GRAVITY</span>
-            <span className="text-[9px] font-mono text-muted-foreground border border-border/50 px-1.5 py-0.5 rounded ml-1">BETA</span>
+            <motion.span
+              className="text-[9px] font-mono text-primary border border-primary/30 px-1.5 py-0.5 rounded ml-1"
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              LIVE
+            </motion.span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-xs text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#speed" className="hover:text-foreground transition-colors">Speed</a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Reviews</a>
+          <div className="hidden md:flex items-center gap-3">
+            <LivePriceFlicker />
           </div>
           <div className="flex items-center gap-3">
-            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-              Log in
-            </button>
-            <button
+            <a href="#features" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden lg:block">Features</a>
+            <a href="#pricing" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden lg:block">Pricing</a>
+            <motion.button
               onClick={() => navigate("/market")}
-              className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center gap-1.5"
+              className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center gap-1.5 relative overflow-hidden"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              Launch Terminal <ArrowRight className="h-3 w-3" />
-            </button>
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ["-200%", "200%"] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+              />
+              <Zap className="h-3 w-3 relative z-10" />
+              <span className="relative z-10">Launch Terminal</span>
+            </motion.button>
           </div>
         </div>
       </motion.nav>
 
       {/* ── HERO ── */}
-      <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">
-        <GridBackground />
-        <FloatingParticles />
-        <DataStreamLines />
+      <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">
+        {/* Background layers */}
+        <GlowOrbs />
+        <OrbitingRings />
+        <DataRain />
+        <ScanLine />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+        {/* Grid */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `
+                linear-gradient(hsl(var(--primary) / 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, hsl(var(--primary) / 0.4) 1px, transparent 1px)
+              `,
+              backgroundSize: "80px 80px",
+            }}
+          />
+        </div>
+
+        <motion.div
+          className="relative z-10 max-w-5xl mx-auto px-6 text-center"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 py-1 border border-border/50 bg-card/30 backdrop-blur-sm mb-8"
-          >
+          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-1.5 border border-border/30 bg-card/20 backdrop-blur-md mb-8 rounded-full">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-positive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-positive"></span>
             </span>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Live · NSE + BSE · Tick-by-Tick</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.15em]">Live · NSE + BSE · Tick-by-Tick</span>
           </motion.div>
 
           {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.7 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6"
-          >
-            <span className="text-foreground">Trade at the </span>
-            <br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-primary via-[hsl(var(--positive))] to-primary bg-clip-text text-transparent">
-              Speed of Light
-            </span>
+          <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-[0.95] mb-6">
+            <span className="text-foreground">Trade at the</span>
+            <br />
+            <GradientText>Speed of Data</GradientText>
           </motion.h1>
 
           {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            India's fastest institutional-grade terminal. Tick-by-tick data, OI intelligence, 
-            options flow, and market microstructure — all in one blazing-fast interface.
+          <motion.p variants={itemVariants} className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
+            India's fastest institutional-grade terminal. Tick-by-tick data, OI intelligence,
+            options flow — all in one blazing-fast interface.
           </motion.p>
 
           {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16"
-          >
-            <button
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+            <motion.button
               onClick={() => navigate("/market")}
-              className="group px-8 py-3 bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+              className="group px-10 py-3.5 bg-primary text-primary-foreground font-bold text-sm transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 40px hsl(var(--primary) / 0.4)" }}
+              whileTap={{ scale: 0.95 }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <Zap className="h-4 w-4" /> Launch Terminal
-            </button>
-            <button className="px-8 py-3 border border-border/50 text-foreground text-sm hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ["-200%", "200%"] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+              <Zap className="h-4 w-4 relative z-10" />
+              <span className="relative z-10">Launch Terminal</span>
+              <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+            <motion.button
+              className="px-10 py-3.5 border border-border/40 text-foreground text-sm hover:border-primary/50 transition-all duration-300 backdrop-blur-sm"
+              whileHover={{ scale: 1.03, borderColor: "hsl(var(--primary) / 0.5)" }}
+              whileTap={{ scale: 0.97 }}
+            >
               Watch Demo
-            </button>
+            </motion.button>
           </motion.div>
 
           {/* Speed Counters */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.7 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 max-w-3xl mx-auto"
-          >
+          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 max-w-3xl mx-auto">
             {[
-              { value: 500, suffix: "+", label: "F&O Stocks", icon: <BarChart3 className="h-4 w-4" /> },
-              { value: 50, suffix: "ms", label: "Avg Latency", icon: <Gauge className="h-4 w-4" /> },
-              { value: 10000, suffix: "+", label: "Ticks/sec", icon: <Cpu className="h-4 w-4" /> },
-              { value: 99.9, suffix: "%", label: "Uptime", decimals: 1, icon: <Radio className="h-4 w-4" /> },
+              { value: 500, suffix: "+", label: "F&O Stocks", icon: <BarChart3 className="h-4 w-4" />, color: "text-primary" },
+              { value: 50, suffix: "ms", label: "Avg Latency", icon: <Gauge className="h-4 w-4" />, color: "text-positive" },
+              { value: 10000, suffix: "+", label: "Ticks/sec", icon: <Cpu className="h-4 w-4" />, color: "text-warning" },
+              { value: 99.9, suffix: "%", label: "Uptime", decimals: 1, icon: <Radio className="h-4 w-4" />, color: "text-negative" },
             ].map((s, i) => (
-              <div key={i} className="text-center">
-                <div className="text-muted-foreground/50 mb-1">{s.icon}</div>
-                <div className="text-2xl sm:text-3xl font-bold text-foreground">
+              <motion.div
+                key={i}
+                className="text-center"
+                whileHover={{ scale: 1.08 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <div className={`${s.color} opacity-50 mb-2 flex justify-center`}>{s.icon}</div>
+                <div className={`text-2xl sm:text-4xl font-bold ${s.color}`}>
                   <AnimatedCounter end={s.value} suffix={s.suffix} duration={2.5} decimals={s.decimals} />
                 </div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{s.label}</div>
-              </div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mt-1">{s.label}</div>
+              </motion.div>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          transition={{ delay: 2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <ChevronDown className="h-5 w-5 text-muted-foreground/50" />
+          <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">Scroll</span>
+          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground/30" />
           </motion.div>
         </motion.div>
       </motion.div>
@@ -426,46 +611,82 @@ const LandingPage = () => {
       <TickerTape />
 
       {/* ── TERMINAL PREVIEW ── */}
-      <Section className="py-20 px-6" id="preview">
+      <Section className="py-24 px-6" id="preview">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="text-[10px] font-mono text-primary uppercase tracking-widest mb-3">The Terminal</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Built for <span className="text-primary">Serious</span> Traders</h2>
+          <div className="text-center mb-14">
+            <motion.div
+              className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              The Terminal
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold mb-3">
+              Built for <span className="text-primary">Serious</span> Traders
+            </h2>
             <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-              Every pixel optimized for information density. No wasted space, no unnecessary animations — 
+              Every pixel optimized for information density. No wasted space —
               just raw market data at your fingertips.
             </p>
           </div>
 
-          {/* Terminal mockup frame */}
-          <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-b from-primary/10 via-transparent to-transparent blur-2xl" />
-            <div className="relative border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+          {/* Terminal mockup */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, y: 60, rotateX: 8 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            style={{ perspective: 1200 }}
+          >
+            {/* Glow behind terminal */}
+            <motion.div
+              className="absolute -inset-8 blur-3xl"
+              style={{ background: "radial-gradient(ellipse at center, hsl(var(--primary) / 0.15), transparent 70%)" }}
+              animate={{ opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
+            <div className="relative border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden shadow-2xl shadow-primary/5">
               {/* Title bar */}
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-border/30 bg-background/50">
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-border/20 bg-background/60">
                 <div className="flex gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-negative/60" />
                   <div className="w-2.5 h-2.5 rounded-full bg-warning/60" />
                   <div className="w-2.5 h-2.5 rounded-full bg-positive/60" />
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground ml-2">gravity.terminal — market overview</span>
+                <span className="text-[10px] font-mono text-muted-foreground/60 ml-2">gravity.terminal — market overview</span>
+                <motion.div
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-positive"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
               </div>
               {/* Grid of mock panels */}
-              <div className="grid grid-cols-3 gap-px bg-border/30 p-px">
+              <div className="grid grid-cols-3 gap-px bg-border/20 p-px">
                 {/* Panel 1 - Mini heatmap */}
-                <div className="bg-card p-3 col-span-2 h-48">
-                  <div className="text-[10px] font-semibold text-muted-foreground mb-2">MARKET HEATMAP</div>
+                <div className="bg-card/80 p-3 col-span-2 h-48">
+                  <div className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                    MARKET HEATMAP
+                    <motion.span
+                      className="w-1 h-1 rounded-full bg-positive"
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                  </div>
                   <div className="grid grid-cols-8 gap-1 h-[calc(100%-20px)]">
                     {Array.from({ length: 32 }).map((_, i) => {
                       const isPositive = Math.random() > 0.45;
-                      const intensity = Math.random() * 0.6 + 0.1;
+                      const intensity = Math.random() * 0.6 + 0.15;
                       return (
                         <motion.div
                           key={i}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 1.2 + i * 0.03 }}
                           className="rounded-sm"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.5 + i * 0.04, type: "spring", stiffness: 200 }}
                           style={{
                             background: isPositive
                               ? `hsl(var(--positive) / ${intensity})`
@@ -477,22 +698,23 @@ const LandingPage = () => {
                   </div>
                 </div>
                 {/* Panel 2 - Watchlist */}
-                <div className="bg-card p-3 h-48">
+                <div className="bg-card/80 p-3 h-48">
                   <div className="text-[10px] font-semibold text-muted-foreground mb-2">WATCHLIST</div>
                   <div className="space-y-1">
                     {[
-                      { sym: "RELIANCE", p: "₹2,487", c: "+1.24%", pos: true },
-                      { sym: "HDFCBANK", p: "₹1,634", c: "-0.42%", pos: false },
-                      { sym: "TCS", p: "₹3,942", c: "+2.31%", pos: true },
-                      { sym: "INFY", p: "₹1,567", c: "+1.78%", pos: true },
-                      { sym: "SBIN", p: "₹631", c: "-0.87%", pos: false },
-                      { sym: "BAJFINANCE", p: "₹6,234", c: "+0.95%", pos: true },
+                      { sym: "RELIANCE", c: "+1.24%", pos: true },
+                      { sym: "HDFCBANK", c: "-0.42%", pos: false },
+                      { sym: "TCS", c: "+2.31%", pos: true },
+                      { sym: "INFY", c: "+1.78%", pos: true },
+                      { sym: "SBIN", c: "-0.87%", pos: false },
+                      { sym: "BAJFINANCE", c: "+0.95%", pos: true },
                     ].map((s, i) => (
                       <motion.div
                         key={s.sym}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.5 + i * 0.08 }}
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.8 + i * 0.1, ease: "easeOut" }}
                         className="flex items-center justify-between text-[10px] py-0.5"
                       >
                         <span className="font-mono text-foreground/70">{s.sym}</span>
@@ -502,35 +724,37 @@ const LandingPage = () => {
                   </div>
                 </div>
                 {/* Panel 3 - Chart line */}
-                <div className="bg-card p-3 col-span-2 h-40">
+                <div className="bg-card/80 p-3 col-span-2 h-40">
                   <div className="text-[10px] font-semibold text-muted-foreground mb-2">NIFTY 50 · 5min</div>
                   <svg viewBox="0 0 400 100" className="w-full h-[calc(100%-20px)]">
-                    <motion.path
-                      d="M0,60 Q20,55 40,50 T80,45 T120,55 T160,40 T200,35 T240,42 T280,30 T320,25 T360,28 T400,20"
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="2"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 2, delay: 1.5, ease: "easeInOut" }}
-                    />
-                    <motion.path
-                      d="M0,60 Q20,55 40,50 T80,45 T120,55 T160,40 T200,35 T240,42 T280,30 T320,25 T360,28 T400,20 L400,100 L0,100 Z"
-                      fill="url(#chartGradient)"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 0.3 }}
-                      transition={{ duration: 1, delay: 3 }}
-                    />
                     <defs>
-                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="chartGradient2" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
                         <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
                       </linearGradient>
                     </defs>
+                    <motion.path
+                      d="M0,70 Q30,65 60,55 T120,48 T180,58 T240,35 T300,30 T360,25 T400,22"
+                      fill="none"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="2.5"
+                      initial={{ pathLength: 0 }}
+                      whileInView={{ pathLength: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 2.5, delay: 0.5, ease: "easeInOut" }}
+                    />
+                    <motion.path
+                      d="M0,70 Q30,65 60,55 T120,48 T180,58 T240,35 T300,30 T360,25 T400,22 L400,100 L0,100 Z"
+                      fill="url(#chartGradient2)"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 0.4 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: 2.5 }}
+                    />
                   </svg>
                 </div>
                 {/* Panel 4 - OI data */}
-                <div className="bg-card p-3 h-40">
+                <div className="bg-card/80 p-3 h-40">
                   <div className="text-[10px] font-semibold text-muted-foreground mb-2">OI PULSE</div>
                   <div className="space-y-2">
                     {[
@@ -541,9 +765,10 @@ const LandingPage = () => {
                     ].map((m, i) => (
                       <motion.div
                         key={m.label}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 2 + i * 0.15 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 1 + i * 0.15 }}
                         className="flex justify-between text-[10px]"
                       >
                         <span className="text-muted-foreground">{m.label}</span>
@@ -554,16 +779,26 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </Section>
 
       {/* ── FEATURES ── */}
-      <Section className="py-20 px-6" id="features">
+      <Section className="py-24 px-6" id="features">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-primary uppercase tracking-widest mb-3">Capabilities</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Everything You Need. <span className="text-primary">Nothing You Don't.</span></h2>
+          <div className="text-center mb-16">
+            <motion.div
+              className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              Capabilities
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold mb-3">
+              Everything You Need. <span className="text-primary">Nothing You Don't.</span>
+            </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               Purpose-built for Indian markets. Every feature designed to give you an unfair edge.
             </p>
@@ -571,23 +806,33 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             <FeatureCard delay={0} icon={<Activity className="h-5 w-5" />} title="Tick-by-Tick Data" desc="Real-time market microstructure with sub-100ms latency. Every trade, every order, every tick." color="hsl(var(--primary))" />
-            <FeatureCard delay={0.05} icon={<Eye className="h-5 w-5" />} title="OI Intelligence" desc="PCR, Max Pain, OI Buildup, Strike Analysis — decoded into actionable signals in real-time." color="hsl(var(--positive))" />
-            <FeatureCard delay={0.1} icon={<TrendingUp className="h-5 w-5" />} title="Options Flow" desc="Full option chain with Greeks, IV surface, GEX flip detection, and smart scanner alerts." color="hsl(var(--warning))" />
-            <FeatureCard delay={0.15} icon={<BarChart3 className="h-5 w-5" />} title="Market Heatmap" desc="500+ stocks color-coded by performance. Sector rotation, breadth, and momentum at a glance." color="hsl(var(--negative))" />
-            <FeatureCard delay={0.2} icon={<Brain className="h-5 w-5" />} title="Smart Scanners" desc="Long Buildup, Short Covering, OHL signals, Volume Spikes — auto-detected and classified." color="hsl(var(--neutral))" />
-            <FeatureCard delay={0.25} icon={<Globe className="h-5 w-5" />} title="Global Context" desc="Track DXY, US yields, crude, gold, and global indices alongside Indian markets." color="hsl(var(--primary))" />
-            <FeatureCard delay={0.3} icon={<Bell className="h-5 w-5" />} title="Smart Alerts" desc="Price, OI, volume, and pattern-based alerts with instant push notifications." color="hsl(var(--positive))" />
-            <FeatureCard delay={0.35} icon={<Shield className="h-5 w-5" />} title="Institutional Grade" desc="Bank-level security, 99.9% uptime, and data integrity you can trust with real capital." color="hsl(var(--muted-foreground))" />
+            <FeatureCard delay={0.08} icon={<Eye className="h-5 w-5" />} title="OI Intelligence" desc="PCR, Max Pain, OI Buildup, Strike Analysis — decoded into actionable signals in real-time." color="hsl(var(--positive))" />
+            <FeatureCard delay={0.16} icon={<TrendingUp className="h-5 w-5" />} title="Options Flow" desc="Full option chain with Greeks, IV surface, GEX flip detection, and smart scanner alerts." color="hsl(var(--warning))" />
+            <FeatureCard delay={0.24} icon={<BarChart3 className="h-5 w-5" />} title="Market Heatmap" desc="500+ stocks color-coded by performance. Sector rotation, breadth, and momentum at a glance." color="hsl(var(--negative))" />
+            <FeatureCard delay={0.32} icon={<Brain className="h-5 w-5" />} title="Smart Scanners" desc="Long Buildup, Short Covering, OHL signals, Volume Spikes — auto-detected and classified." color="hsl(var(--neutral))" />
+            <FeatureCard delay={0.4} icon={<Globe className="h-5 w-5" />} title="Global Context" desc="Track DXY, US yields, crude, gold, and global indices alongside Indian markets." color="hsl(var(--primary))" />
+            <FeatureCard delay={0.48} icon={<Bell className="h-5 w-5" />} title="Smart Alerts" desc="Price, OI, volume, and pattern-based alerts with instant push notifications." color="hsl(var(--positive))" />
+            <FeatureCard delay={0.56} icon={<Shield className="h-5 w-5" />} title="Institutional Grade" desc="Bank-level security, 99.9% uptime, and data integrity you can trust with real capital." color="hsl(var(--muted-foreground))" />
           </div>
         </div>
       </Section>
 
       {/* ── SPEED SECTION ── */}
-      <Section className="py-20 px-6" id="speed">
+      <Section className="py-24 px-6" id="speed">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-positive uppercase tracking-widest mb-3">Performance</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Built for <span className="text-positive">Speed</span></h2>
+          <div className="text-center mb-16">
+            <motion.div
+              className="text-[10px] font-mono text-positive uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              Performance
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold mb-3">
+              Built for <GradientText className="font-bold">Speed</GradientText>
+            </h2>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto">
               When every millisecond counts, Gravity delivers. Faster data means faster decisions.
             </p>
@@ -595,52 +840,49 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              {
-                metric: "50ms",
-                label: "End-to-end Latency",
-                desc: "From exchange tick to your screen. Faster than blinking.",
-                icon: <Clock className="h-5 w-5" />,
-                color: "hsl(var(--positive))",
-                bar: 95,
-              },
-              {
-                metric: "10K+",
-                label: "Ticks Per Second",
-                desc: "Process entire market depth books in real-time.",
-                icon: <Cpu className="h-5 w-5" />,
-                color: "hsl(var(--primary))",
-                bar: 88,
-              },
-              {
-                metric: "<1s",
-                label: "Chart Load Time",
-                desc: "Switch between 500+ symbols instantly. Zero lag.",
-                icon: <MousePointerClick className="h-5 w-5" />,
-                color: "hsl(var(--warning))",
-                bar: 92,
-              },
+              { metric: "50ms", label: "End-to-end Latency", desc: "From exchange tick to your screen. Faster than blinking.", icon: <Clock className="h-6 w-6" />, color: "hsl(var(--positive))", bar: 95 },
+              { metric: "10K+", label: "Ticks Per Second", desc: "Process entire market depth books in real-time.", icon: <Cpu className="h-6 w-6" />, color: "hsl(var(--primary))", bar: 88 },
+              { metric: "<1s", label: "Chart Load Time", desc: "Switch between 500+ symbols instantly. Zero lag.", icon: <MousePointerClick className="h-6 w-6" />, color: "hsl(var(--warning))", bar: 92 },
             ].map((s, i) => (
               <motion.div
                 key={s.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="bg-card/30 border border-border/30 p-6 text-center"
+                transition={{ delay: i * 0.15, duration: 0.6 }}
+                whileHover={{ y: -6, boxShadow: `0 20px 40px -20px ${s.color}30` }}
+                className="bg-card/30 border border-border/30 p-8 text-center relative overflow-hidden"
               >
-                <div className="flex justify-center mb-4" style={{ color: s.color }}>{s.icon}</div>
-                <div className="text-3xl font-mono font-bold mb-1" style={{ color: s.color }}>{s.metric}</div>
-                <div className="text-xs font-semibold text-foreground mb-1">{s.label}</div>
-                <div className="text-[10px] text-muted-foreground mb-4">{s.desc}</div>
-                <div className="h-1 bg-border/30 rounded-full overflow-hidden">
+                <motion.div
+                  className="absolute inset-0"
+                  style={{ background: `radial-gradient(circle at 50% 100%, ${s.color}08, transparent 60%)` }}
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+                />
+                <div className="relative z-10">
+                  <div className="flex justify-center mb-4" style={{ color: s.color }}>{s.icon}</div>
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: s.color }}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${s.bar}%` }}
+                    className="text-4xl font-mono font-bold mb-2"
+                    style={{ color: s.color }}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 1.5, delay: 0.3 + i * 0.1, ease: "easeOut" }}
-                  />
+                    transition={{ delay: 0.3 + i * 0.15, type: "spring", stiffness: 200 }}
+                  >
+                    {s.metric}
+                  </motion.div>
+                  <div className="text-xs font-semibold text-foreground mb-1">{s.label}</div>
+                  <div className="text-[10px] text-muted-foreground mb-5">{s.desc}</div>
+                  <div className="h-1.5 bg-border/20 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${s.color}60, ${s.color})` }}
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${s.bar}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.8, delay: 0.5 + i * 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    />
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -649,11 +891,21 @@ const LandingPage = () => {
       </Section>
 
       {/* ── WHO IT'S FOR ── */}
-      <Section className="py-20 px-6">
+      <Section className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-warning uppercase tracking-widest mb-3">Made For</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Who Uses <span className="text-warning">Gravity</span>?</h2>
+          <div className="text-center mb-16">
+            <motion.div
+              className="text-[10px] font-mono text-warning uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              Made For
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold">
+              Who Uses <span className="text-warning">Gravity</span>?
+            </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
@@ -664,13 +916,28 @@ const LandingPage = () => {
             ].map((u, i) => (
               <motion.div
                 key={u.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30, rotateY: -10 }}
+                whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="border border-border/30 p-5 bg-card/20 hover:bg-card/40 transition-colors"
+                transition={{ delay: i * 0.1, duration: 0.6 }}
+                whileHover={{ y: -4, borderColor: "hsl(var(--warning) / 0.3)" }}
+                className="border border-border/30 p-5 bg-card/20 transition-colors relative overflow-hidden"
               >
-                <div className="text-warning mb-3">{u.icon}</div>
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-px"
+                  style={{ background: "linear-gradient(90deg, transparent, hsl(var(--warning) / 0.3), transparent)" }}
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + i * 0.1, duration: 0.8 }}
+                />
+                <motion.div
+                  className="text-warning mb-3"
+                  whileHover={{ rotate: 10, scale: 1.2 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  {u.icon}
+                </motion.div>
                 <div className="text-sm font-semibold mb-1">{u.title}</div>
                 <div className="text-[11px] text-muted-foreground leading-relaxed">{u.desc}</div>
               </motion.div>
@@ -680,108 +947,121 @@ const LandingPage = () => {
       </Section>
 
       {/* ── TESTIMONIALS ── */}
-      <Section className="py-20 px-6" id="testimonials">
+      <Section className="py-24 px-6" id="testimonials">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-primary uppercase tracking-widest mb-3">Trusted</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">What Traders <span className="text-primary">Say</span></h2>
+          <div className="text-center mb-16">
+            <motion.div
+              className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              Trusted
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold">
+              What Traders <span className="text-primary">Say</span>
+            </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <TestimonialCard delay={0} quote="Gravity's OI intelligence is unmatched. I can see institutional activity before the move happens. My win rate improved from 52% to 68% in just two months." name="Rajesh Sharma" role="Full-time Options Trader, Mumbai" />
-            <TestimonialCard delay={0.1} quote="We replaced three different platforms with Gravity. The speed and data density is exactly what a prop desk needs. Our analysts won't use anything else now." name="Priya Venkatesh" role="Head of Trading, Vertex Capital" />
-            <TestimonialCard delay={0.2} quote="The OHL scanner and buildup classifier alone are worth the subscription. I catch momentum moves 10-15 minutes before the crowd. Game changer." name="Amit Deshmukh" role="Day Trader, 8 years experience" />
+            <TestimonialCard delay={0.15} quote="We replaced three different platforms with Gravity. The speed and data density is exactly what a prop desk needs. Our analysts won't use anything else now." name="Priya Venkatesh" role="Head of Trading, Vertex Capital" />
+            <TestimonialCard delay={0.3} quote="The OHL scanner and buildup classifier alone are worth the subscription. I catch momentum moves 10-15 minutes before the crowd. Game changer." name="Amit Deshmukh" role="Day Trader, 8 years experience" />
           </div>
         </div>
       </Section>
 
       {/* ── PRICING ── */}
-      <Section className="py-20 px-6" id="pricing">
+      <Section className="py-24 px-6" id="pricing">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-[10px] font-mono text-primary uppercase tracking-widest mb-3">Pricing</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Simple, <span className="text-primary">Transparent</span> Pricing</h2>
+          <div className="text-center mb-16">
+            <motion.div
+              className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-3"
+              initial={{ letterSpacing: "0.5em", opacity: 0 }}
+              whileInView={{ letterSpacing: "0.2em", opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              Pricing
+            </motion.div>
+            <h2 className="text-2xl sm:text-4xl font-bold mb-3">
+              Simple, <GradientText>Transparent</GradientText> Pricing
+            </h2>
             <p className="text-sm text-muted-foreground">Start free. Scale when ready. Cancel anytime.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <PricingCard
-              delay={0}
-              name="Starter"
-              price="Free"
-              period="forever"
-              features={[
-                "Delayed market data (15 min)",
-                "Basic watchlist (20 stocks)",
-                "Market heatmap",
-                "5 alerts",
-                "Community support",
-              ]}
-              cta="Get Started"
-            />
-            <PricingCard
-              delay={0.1}
-              name="Pro"
-              price="₹999"
-              period="/month"
-              popular
-              features={[
-                "Real-time tick-by-tick data",
-                "Unlimited watchlists",
-                "Full OI Intelligence suite",
-                "Options flow & scanners",
-                "Unlimited alerts + push",
-                "Priority support",
-              ]}
-              cta="Start Free Trial"
-            />
-            <PricingCard
-              delay={0.2}
-              name="Institutional"
-              price="₹4,999"
-              period="/month"
-              features={[
-                "Everything in Pro",
-                "API access",
-                "Multi-screen support",
-                "Custom scanners",
-                "Dedicated account manager",
-                "White-label options",
-              ]}
-              cta="Contact Sales"
-            />
+            <PricingCard delay={0} name="Starter" price="Free" period="forever" features={["Delayed market data (15 min)", "Basic watchlist (20 stocks)", "Market heatmap", "5 alerts", "Community support"]} cta="Get Started" />
+            <PricingCard delay={0.15} name="Pro" price="₹999" period="/month" popular features={["Real-time tick-by-tick data", "Unlimited watchlists", "Full OI Intelligence suite", "Options flow & scanners", "Unlimited alerts + push", "Priority support"]} cta="Start Free Trial" />
+            <PricingCard delay={0.3} name="Institutional" price="₹4,999" period="/month" features={["Everything in Pro", "API access", "Multi-screen support", "Custom scanners", "Dedicated account manager", "White-label options"]} cta="Contact Sales" />
           </div>
         </div>
       </Section>
 
       {/* ── FINAL CTA ── */}
-      <Section className="py-24 px-6">
+      <Section className="py-28 px-6">
         <div className="relative max-w-4xl mx-auto text-center">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 blur-3xl" />
+          <motion.div
+            className="absolute -inset-20 blur-[100px]"
+            style={{ background: "radial-gradient(ellipse, hsl(var(--primary) / 0.1), transparent 70%)" }}
+            animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          />
           <div className="relative z-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Ready to Trade <span className="text-primary">Faster</span>?
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8">
-              Join thousands of traders who've already upgraded to Gravity. 
-              Your edge starts here.
-            </p>
-            <button
-              onClick={() => navigate("/market")}
-              className="group px-10 py-3.5 bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all duration-300 inline-flex items-center gap-2 relative overflow-hidden"
+            <motion.h2
+              className="text-3xl sm:text-5xl font-bold mb-5"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <Zap className="h-4 w-4" /> Launch Terminal — It's Free
-            </button>
-            <div className="flex items-center justify-center gap-6 mt-6 text-[10px] text-muted-foreground">
+              Ready to Trade <GradientText>Faster</GradientText>?
+            </motion.h2>
+            <motion.p
+              className="text-sm text-muted-foreground max-w-lg mx-auto mb-10"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              Join thousands of traders who've already upgraded to Gravity.
+              Your edge starts here.
+            </motion.p>
+            <motion.button
+              onClick={() => navigate("/market")}
+              className="group px-12 py-4 bg-primary text-primary-foreground font-bold text-sm transition-all duration-300 inline-flex items-center gap-2 relative overflow-hidden"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 60px hsl(var(--primary) / 0.5)" }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+            >
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ["-200%", "200%"] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+              <Zap className="h-4 w-4 relative z-10" />
+              <span className="relative z-10">Launch Terminal — It's Free</span>
+              <ArrowRight className="h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+            <motion.div
+              className="flex items-center justify-center gap-6 mt-8 text-[10px] text-muted-foreground"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.7 }}
+            >
               <span className="flex items-center gap-1"><Check className="h-3 w-3 text-positive" /> No credit card</span>
               <span className="flex items-center gap-1"><Check className="h-3 w-3 text-positive" /> Free forever plan</span>
               <span className="flex items-center gap-1"><Check className="h-3 w-3 text-positive" /> Cancel anytime</span>
-            </div>
+            </motion.div>
           </div>
         </div>
       </Section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-border/30 py-12 px-6">
+      <footer className="border-t border-border/20 py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div>
@@ -795,35 +1075,22 @@ const LandingPage = () => {
                 India's fastest trading terminal. Built for traders who demand speed and precision.
               </p>
             </div>
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-3 text-muted-foreground">Product</div>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="hover:text-foreground cursor-pointer transition-colors">Terminal</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Features</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Pricing</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">API</div>
+            {[
+              { title: "Product", links: ["Terminal", "Features", "Pricing", "API"] },
+              { title: "Resources", links: ["Documentation", "Blog", "Changelog", "Status"] },
+              { title: "Company", links: ["About", "Careers", "Contact", "Legal"] },
+            ].map(col => (
+              <div key={col.title}>
+                <div className="text-[10px] font-semibold uppercase tracking-wider mb-3 text-muted-foreground">{col.title}</div>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  {col.links.map(l => (
+                    <div key={l} className="hover:text-foreground cursor-pointer transition-colors">{l}</div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-3 text-muted-foreground">Resources</div>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="hover:text-foreground cursor-pointer transition-colors">Documentation</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Blog</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Changelog</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Status</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-3 text-muted-foreground">Company</div>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="hover:text-foreground cursor-pointer transition-colors">About</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Careers</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Contact</div>
-                <div className="hover:text-foreground cursor-pointer transition-colors">Legal</div>
-              </div>
-            </div>
+            ))}
           </div>
-          <div className="border-t border-border/20 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="border-t border-border/15 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="text-[10px] text-muted-foreground">© 2026 Gravity Technologies Pvt. Ltd. All rights reserved.</span>
             <div className="flex gap-4 text-[10px] text-muted-foreground">
               <span className="hover:text-foreground cursor-pointer transition-colors">Privacy</span>

@@ -726,7 +726,7 @@ const LandingPage = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-positive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-positive"></span>
             </span>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.15em]">Live · NSE + BSE · Tick-by-Tick</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.15em]">Live · NSE · Tick-by-Tick</span>
           </motion.div>
 
           {/* Title */}

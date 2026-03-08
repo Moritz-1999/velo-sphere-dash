@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import gravityLogo from "@/assets/gravity-logo.png";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {

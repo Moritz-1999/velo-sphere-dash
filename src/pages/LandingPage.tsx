@@ -499,7 +499,6 @@ const LandingPage = () => {
         <GlowOrbs />
         <OrbitingRings />
         <DataRain />
-        <ScanLine />
 
         {/* Grid */}
         <div className="absolute inset-0 pointer-events-none">
@@ -531,14 +530,14 @@ const LandingPage = () => {
           </motion.div>
 
           {/* Title */}
-          <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-[0.95] mb-6">
+          <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
             <span className="text-foreground">Trade at the</span>
             <br />
             <GradientText>Speed of Data</GradientText>
           </motion.h1>
 
           {/* Subtitle */}
-          <motion.p variants={itemVariants} className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
+          <motion.p variants={itemVariants} className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
             India's fastest institutional-grade terminal. Tick-by-tick data, OI intelligence,
             options flow — all in one blazing-fast interface.
           </motion.p>

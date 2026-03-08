@@ -77,9 +77,62 @@ function TickerTape() {
   );
 }
 
-/* ─── HFT Data Flow ─── */
+/* ─── Floating Math Symbols ─── */
 function HFTDataFlow() {
-  const streams = useMemo(() => {
+  const symbols = useMemo(() => {
+    const chars = [
+      "∑", "∫", "∂", "∞", "π", "Δ", "√", "≈", "≠", "±",
+      "∏", "∇", "⊕", "⊗", "λ", "θ", "φ", "σ", "μ", "α",
+      "β", "γ", "ε", "ω", "ℝ", "ℂ", "ℕ", "∈", "⊂", "∪",
+      "∩", "⇒", "⇔", "∀", "∃", "¬", "∧", "∨", "⊥", "⊤",
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+      "1.618", "2.718", "3.14", "0.01", "99.9", "42",
+      "%", "÷", "×", "=", "+", "−", "≥", "≤", ">", "<",
+      "f(x)", "dx", "dy", "lim", "log", "sin", "cos",
+    ];
+    return Array.from({ length: 55 }).map((_, i) => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const top = 5 + Math.random() * 90;
+      const isNearCenter = top > 25 && top < 65;
+      const speed = isNearCenter ? 2 + Math.random() * 3 : 8 + Math.random() * 14;
+      return {
+        char,
+        top: `${top}%`,
+        speed,
+        delay: Math.random() * 10,
+        opacity: isNearCenter ? 0.06 + Math.random() * 0.08 : 0.03 + Math.random() * 0.05,
+        size: isNearCenter ? 11 + Math.random() * 5 : 9 + Math.random() * 4,
+        direction: i % 2 === 0 ? 1 : -1,
+      };
+    });
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {symbols.map((s, i) => (
+        <motion.span
+          key={i}
+          className="absolute font-mono text-foreground/30 select-none"
+          style={{
+            top: s.top,
+            fontSize: `${s.size}px`,
+            opacity: s.opacity,
+          }}
+          initial={{ x: s.direction > 0 ? "-5vw" : "105vw" }}
+          animate={{ x: s.direction > 0 ? "105vw" : "-5vw" }}
+          transition={{
+            duration: s.speed,
+            repeat: Infinity,
+            delay: s.delay,
+            ease: "linear",
+          }}
+        >
+          {s.char}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
     const symbols = ["RELIANCE", "SBIN", "TCS", "HDFCBANK", "INFY", "BAJFINANCE", "NIFTY", "BANKNIFTY", "TATAMOTORS", "ICICIBANK", "ADANIENT", "HCLTECH", "WIPRO", "ONGC", "ITC"];
     const actions = ["BUY", "SELL", "BID", "ASK", "FILL", "CANCEL"];
     const exchanges = ["NSE", "BSE"];

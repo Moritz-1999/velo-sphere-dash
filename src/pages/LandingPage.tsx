@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import gravityLogo from "@/assets/gravity-logo.png";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
@@ -649,17 +650,17 @@ const LandingPage = () => {
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center h-14 bg-background/70 backdrop-blur-2xl border-b border-border/10"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center h-16 bg-background/70 backdrop-blur-2xl border-b border-border/10"
       >
-        <div className="flex items-center gap-2.5">
-          <motion.div
-            className="w-7 h-7 rounded bg-primary flex items-center justify-center"
+        <div className="flex items-center gap-3">
+          <motion.img
+            src={gravityLogo}
+            alt="Gravity Logo"
+            className="h-10 w-10 object-contain"
             whileHover={{ rotate: 180, scale: 1.1 }}
             transition={{ duration: 0.4 }}
-          >
-            <Activity className="h-4 w-4 text-primary-foreground" />
-          </motion.div>
-          <span className="text-sm font-bold tracking-tight">GRAVITY</span>
+          />
+          <span className="text-xl font-bold tracking-tight">GRAVITY</span>
         </div>
       </motion.div>
 

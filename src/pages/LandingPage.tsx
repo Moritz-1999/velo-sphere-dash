@@ -77,63 +77,49 @@ function TickerTape() {
   );
 }
 
-/* ─── HFT Data Flow ─── */
+/* ─── Floating Math Symbols ─── */
 function HFTDataFlow() {
-  const streams = useMemo(() => {
-    const symbols = ["RELIANCE", "SBIN", "TCS", "HDFCBANK", "INFY", "BAJFINANCE", "NIFTY", "BANKNIFTY", "TATAMOTORS", "ICICIBANK", "ADANIENT", "HCLTECH", "WIPRO", "ONGC", "ITC"];
-    const actions = ["BUY", "SELL", "BID", "ASK", "FILL", "CANCEL"];
-    const exchanges = ["NSE", "BSE"];
-    
-    return Array.from({ length: 30 }).map((_, i) => {
-      const sym = symbols[Math.floor(Math.random() * symbols.length)];
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      const exch = exchanges[Math.floor(Math.random() * exchanges.length)];
-      const price = (500 + Math.random() * 4000).toFixed(2);
-      const qty = Math.floor(Math.random() * 5000 + 50);
-      const isBuy = action === "BUY" || action === "BID" || action === "FILL";
-      const speed = 3 + Math.random() * 6;
-      const top = 5 + (i / 30) * 90;
-      
+  const symbols = useMemo(() => {
+    const chars = [
+      "∑", "∫", "∂", "∞", "π", "Δ", "√", "≈", "≠", "±",
+      "∏", "∇", "⊕", "⊗", "λ", "θ", "φ", "σ", "μ", "α",
+      "β", "γ", "ε", "ω", "ℝ", "ℂ", "ℕ", "∈", "⊂", "∪",
+      "∩", "⇒", "⇔", "∀", "∃", "¬", "∧", "∨", "⊥", "⊤",
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+      "1.618", "2.718", "3.14", "0.01", "99.9", "42",
+      "%", "÷", "×", "=", "+", "−", "≥", "≤", ">", "<",
+      "f(x)", "dx", "dy", "lim", "log", "sin", "cos",
+    ];
+    return Array.from({ length: 55 }).map((_, i) => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const top = 5 + Math.random() * 90;
+      const isNearCenter = top > 25 && top < 65;
+      const speed = isNearCenter ? 2 + Math.random() * 3 : 8 + Math.random() * 14;
       return {
-        text: `${exch}:${sym} ${action} ${qty} @ ₹${price}`,
+        char,
         top: `${top}%`,
         speed,
-        delay: Math.random() * 8,
-        isBuy,
-        opacity: 0.10 + Math.random() * 0.12,
+        delay: Math.random() * 10,
+        opacity: isNearCenter ? 0.06 + Math.random() * 0.08 : 0.03 + Math.random() * 0.05,
+        size: isNearCenter ? 11 + Math.random() * 5 : 9 + Math.random() * 4,
+        direction: i % 2 === 0 ? 1 : -1,
       };
     });
   }, []);
 
-  // Vertical fast ticks (price ladder style)
-  const ticks = useMemo(() =>
-    Array.from({ length: 15 }).map((_, i) => ({
-      left: `${5 + (i / 15) * 90}%`,
-      delay: Math.random() * 4,
-      speed: 1.5 + Math.random() * 2.5,
-      values: Array.from({ length: 20 }).map(() => {
-        const v = (18000 + Math.random() * 8000).toFixed(Math.random() > 0.5 ? 0 : 2);
-        return { val: v, positive: Math.random() > 0.45 };
-      }),
-    })),
-  []);
-
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Horizontal streaming trades */}
-      {streams.map((s, i) => (
-        <motion.div
-          key={`h-${i}`}
-          className="absolute whitespace-nowrap font-mono"
+      {symbols.map((s, i) => (
+        <motion.span
+          key={i}
+          className="absolute font-mono text-foreground/30 select-none"
           style={{
             top: s.top,
-            fontSize: "10px",
-            letterSpacing: "0.05em",
-            color: s.isBuy ? "hsl(var(--positive))" : "hsl(var(--negative))",
+            fontSize: `${s.size}px`,
             opacity: s.opacity,
           }}
-          initial={{ x: i % 2 === 0 ? "-100%" : "100vw" }}
-          animate={{ x: i % 2 === 0 ? "100vw" : "-100%" }}
+          initial={{ x: s.direction > 0 ? "-5vw" : "105vw" }}
+          animate={{ x: s.direction > 0 ? "105vw" : "-5vw" }}
           transition={{
             duration: s.speed,
             repeat: Infinity,
@@ -141,58 +127,14 @@ function HFTDataFlow() {
             ease: "linear",
           }}
         >
-          {s.text}
-        </motion.div>
-      ))}
-
-      {/* Vertical fast price ticks */}
-      {ticks.map((t, i) => (
-        <motion.div
-          key={`v-${i}`}
-          className="absolute text-[8px] font-mono leading-[12px] whitespace-nowrap"
-          style={{ left: t.left, opacity: 0.10 }}
-          initial={{ y: "-50%" }}
-          animate={{ y: "100vh" }}
-          transition={{
-            duration: t.speed,
-            repeat: Infinity,
-            delay: t.delay,
-            ease: "linear",
-          }}
-        >
-          {t.values.map((v, j) => (
-            <div key={j} style={{ color: v.positive ? "hsl(var(--positive))" : "hsl(var(--negative))" }}>
-              {v.val}
-            </div>
-          ))}
-        </motion.div>
-      ))}
-
-      {/* Quick flash dots simulating executions */}
-      {Array.from({ length: 12 }).map((_, i) => (
-        <motion.div
-          key={`dot-${i}`}
-          className="absolute w-1 h-1 rounded-full"
-          style={{
-            left: `${10 + Math.random() * 80}%`,
-            top: `${10 + Math.random() * 80}%`,
-            background: i % 2 === 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
-          }}
-          animate={{
-            opacity: [0, 0.6, 0],
-            scale: [0, 1.5, 0],
-          }}
-          transition={{
-            duration: 0.8 + Math.random() * 1.2,
-            repeat: Infinity,
-            delay: Math.random() * 5,
-            repeatDelay: 1 + Math.random() * 4,
-          }}
-        />
+          {s.char}
+        </motion.span>
       ))}
     </div>
   );
 }
+
+
 
 /* ─── Orbiting Rings ─── */
 function OrbitingRings() {

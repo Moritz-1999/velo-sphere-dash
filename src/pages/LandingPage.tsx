@@ -493,10 +493,10 @@ function LiveChartPanel() {
       setPoints(prev => {
         const next = [...prev.slice(1)];
         const last = prev[prev.length - 1];
-        next.push(Math.max(15, Math.min(85, last + (Math.random() - 0.48) * 8)));
+        next.push(Math.max(15, Math.min(85, last + (Math.random() - 0.48) * 6)));
         return next;
       });
-    }, 400);
+    }, 150);
     return () => clearInterval(timer);
   }, []);
 

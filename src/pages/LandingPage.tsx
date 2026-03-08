@@ -644,54 +644,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* ── NAV ── */}
-      <motion.nav
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl"
-      >
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <motion.div
-              className="w-7 h-7 rounded bg-primary flex items-center justify-center"
-              whileHover={{ rotate: 180, scale: 1.1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <Activity className="h-4 w-4 text-primary-foreground" />
-            </motion.div>
-            <span className="text-sm font-bold tracking-tight">GRAVITY</span>
-            <motion.span
-              className="text-[9px] font-mono text-primary border border-primary/30 px-1.5 py-0.5 rounded ml-1"
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              LIVE
-            </motion.span>
-          </div>
-          <div className="hidden md:flex items-center gap-3">
-            <LivePriceFlicker />
-          </div>
-          <div className="flex items-center gap-3">
-            <a href="#features" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden lg:block">Features</a>
-            <a href="#pricing" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden lg:block">Pricing</a>
-            <motion.button
-              onClick={() => navigate("/market")}
-              className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center gap-1.5 relative overflow-hidden"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <motion.span
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                animate={{ x: ["-200%", "200%"] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-              />
-              <Zap className="h-3 w-3 relative z-10" />
-              <span className="relative z-10">Launch Terminal</span>
-            </motion.button>
-          </div>
-        </div>
-      </motion.nav>
+      {/* ── NAV removed ── */}
 
       {/* ── HERO ── */}
       <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">

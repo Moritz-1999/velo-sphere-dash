@@ -497,7 +497,7 @@ const LandingPage = () => {
       <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center pt-14">
         {/* Background layers */}
         <GlowOrbs />
-        <OrbitingRings />
+        {/* OrbitingRings removed */}
         <DataRain />
 
         {/* Grid */}

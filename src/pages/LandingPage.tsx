@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import gravityLogo from "@/assets/gravity-logo.png";
+import heroChart from "@/assets/hero-chart.png";
+import heroBull from "@/assets/hero-bull.png";
+import heroOrderbook from "@/assets/hero-orderbook.png";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
@@ -725,70 +728,67 @@ const LandingPage = () => {
         <HFTDataFlow />
         <GlowOrbs />
 
-        {/* Floating UI fragment — top left: mini watchlist */}
+        {/* Floating dramatic images */}
+        {/* Bull statue — top right, overlapping text */}
         <motion.div
-          className="absolute top-[12%] left-[6%] z-20 hidden md:block"
-          initial={{ opacity: 0, x: -40, rotate: -3 }}
-          animate={{ opacity: 1, x: 0, rotate: -2 }}
-          transition={{ duration: 1, delay: 0.8 }}
+          className="absolute top-[5%] right-[0%] z-30 hidden md:block"
+          initial={{ opacity: 0, x: 80, rotate: 5 }}
+          animate={{ opacity: 0.9, x: 0, rotate: -2 }}
+          transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
         >
-          <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-48 shadow-2xl shadow-primary/5">
-            <div className="text-[8px] font-mono text-muted-foreground/60 mb-2 flex items-center gap-1.5">
-              <motion.span className="w-1 h-1 rounded-full bg-positive" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
-              WATCHLIST
-            </div>
-            {[
-              { s: "RELIANCE", p: "₹2,487", c: "+1.24%", up: true },
-              { s: "HDFCBANK", p: "₹1,634", c: "-0.42%", up: false },
-              { s: "TCS", p: "₹3,942", c: "+2.31%", up: true },
-              { s: "INFY", p: "₹1,567", c: "+1.78%", up: true },
-            ].map((r) => (
-              <div key={r.s} className="flex items-center justify-between text-[8px] font-mono py-0.5">
-                <span className="text-foreground/50">{r.s}</span>
-                <span className="text-foreground/30">{r.p}</span>
-                <span className={r.up ? "text-positive" : "text-negative"}>{r.c}</span>
-              </div>
-            ))}
-          </div>
+          <motion.img
+            src={heroBull}
+            alt=""
+            className="w-[260px] lg:w-[380px] drop-shadow-[0_0_60px_hsl(var(--primary)/0.25)]"
+            animate={{ y: [0, -12, 0], rotate: [-2, 1, -2] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          />
         </motion.div>
 
-        {/* Floating UI fragment — top right: mini chart */}
+        {/* Chart dashboard — top left, tilted */}
         <motion.div
-          className="absolute top-[15%] right-[5%] z-20 hidden md:block"
-          initial={{ opacity: 0, x: 40, rotate: 2 }}
-          animate={{ opacity: 1, x: 0, rotate: 3 }}
-          transition={{ duration: 1, delay: 1.0 }}
+          className="absolute top-[8%] left-[2%] z-20 hidden md:block"
+          initial={{ opacity: 0, x: -60, rotate: -8 }}
+          animate={{ opacity: 0.8, x: 0, rotate: -6 }}
+          transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
         >
-          <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-52 shadow-2xl shadow-primary/5">
-            <div className="text-[8px] font-mono text-muted-foreground/60 mb-1 flex items-center gap-1.5">
-              <motion.span className="w-1 h-1 rounded-full bg-primary" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }} />
-              NIFTY 50 · 1s
-            </div>
-            <svg viewBox="0 0 200 60" className="w-full h-12">
-              <defs>
-                <linearGradient id="heroChartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M0,40 L15,35 L30,38 L45,30 L60,32 L75,25 L90,28 L105,20 L120,22 L135,15 L150,18 L165,12 L180,16 L200,10 L200,60 L0,60 Z" fill="url(#heroChartGrad)" />
-              <path d="M0,40 L15,35 L30,38 L45,30 L60,32 L75,25 L90,28 L105,20 L120,22 L135,15 L150,18 L165,12 L180,16 L200,10" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-              <circle cx="200" cy="10" r="2" fill="hsl(var(--primary))">
-                <animate attributeName="r" values="1.5;3;1.5" dur="1s" repeatCount="indefinite" />
-              </circle>
-            </svg>
-          </div>
+          <motion.img
+            src={heroChart}
+            alt=""
+            className="w-[220px] lg:w-[300px] rounded border border-border/20 shadow-2xl shadow-primary/10"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
         </motion.div>
 
-        {/* Floating UI fragment — bottom left: order flow tape */}
+        {/* Orderbook — bottom left */}
         <motion.div
-          className="absolute bottom-[18%] left-[8%] z-20 hidden lg:block"
-          initial={{ opacity: 0, y: 30, rotate: 1 }}
-          animate={{ opacity: 1, y: 0, rotate: -1 }}
+          className="absolute bottom-[10%] left-[4%] z-20 hidden lg:block"
+          initial={{ opacity: 0, y: 40, rotate: 3 }}
+          animate={{ opacity: 0.7, y: 0, rotate: 2 }}
+          transition={{ duration: 1, delay: 0.9, ease: "easeOut" }}
+        >
+          <motion.img
+            src={heroOrderbook}
+            alt=""
+            className="w-[180px] lg:w-[240px] rounded border border-border/20 shadow-2xl shadow-positive/10"
+            animate={{ y: [0, -6, 0], rotate: [2, -1, 2] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          />
+        </motion.div>
+
+        {/* Floating order flow card — bottom right */}
+        <motion.div
+          className="absolute bottom-[14%] right-[5%] z-20 hidden md:block"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 1.2 }}
         >
           <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-44 shadow-2xl shadow-primary/5">
-            <div className="text-[8px] font-mono text-muted-foreground/60 mb-2">ORDER FLOW</div>
+            <div className="text-[8px] font-mono text-muted-foreground/60 mb-2 flex items-center gap-1.5">
+              <motion.span className="w-1 h-1 rounded-full bg-positive" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
+              ORDER FLOW
+            </div>
             {[
               { a: "BUY", s: "NIFTY", q: "2400", up: true },
               { a: "SELL", s: "BNKNIFTY", q: "1800", up: false },
@@ -803,30 +803,15 @@ const LandingPage = () => {
           </div>
         </motion.div>
 
-        {/* Corner labels — monospace metadata */}
-        <motion.div
-          className="absolute bottom-10 left-8 z-20 hidden md:block"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-        >
+        {/* Corner labels */}
+        <motion.div className="absolute bottom-10 left-8 z-20 hidden md:block" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
           <div className="text-[10px] font-mono text-muted-foreground/30 uppercase leading-relaxed">
-            Tick-by-tick data<br />
-            Institutional grade<br />
-            Order flow analytics
+            Tick-by-tick data<br />Institutional grade<br />Order flow analytics
           </div>
         </motion.div>
-
-        <motion.div
-          className="absolute bottom-10 right-8 z-20 hidden md:block"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-        >
+        <motion.div className="absolute bottom-10 right-8 z-20 hidden md:block" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
           <div className="text-[10px] font-mono text-muted-foreground/30 uppercase leading-relaxed text-right">
-            50ms latency<br />
-            200+ F&O stocks<br />
-            Real-time streaming
+            50ms latency<br />200+ F&O stocks<br />Real-time streaming
           </div>
         </motion.div>
 

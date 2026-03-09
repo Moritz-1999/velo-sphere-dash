@@ -416,7 +416,7 @@ function PricingCard({ name, price, period, features, popular, cta, delay = 0 }:
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 3, repeat: Infinity }}
           />
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest z-20">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest z-20">
             Most Popular
           </div>
         </>

@@ -728,39 +728,6 @@ const LandingPage = () => {
         <HFTDataFlow />
         <GlowOrbs />
 
-        {/* Floating dramatic images — physics themed */}
-        {/* Rocket — top right, launching upward */}
-        <motion.div
-          className="absolute top-[5%] right-[2%] z-30 hidden md:block"
-          initial={{ opacity: 0, y: 80 }}
-          animate={{ opacity: 0.9, y: 0 }}
-          transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
-        >
-          <motion.img
-            src={heroRocket}
-            alt=""
-            className="w-[220px] lg:w-[320px] drop-shadow-[0_0_60px_hsl(var(--primary)/0.3)]"
-            animate={{ y: [0, -15, 0], rotate: [0, 3, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </motion.div>
-
-        {/* Gravity wave — top left */}
-        <motion.div
-          className="absolute top-[10%] left-[3%] z-20 hidden md:block"
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 0.7, scale: 1 }}
-          transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
-        >
-          <motion.img
-            src={heroGravityWave}
-            alt=""
-            className="w-[200px] lg:w-[280px] drop-shadow-[0_0_40px_hsl(var(--primary)/0.2)]"
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          />
-        </motion.div>
-
         {/* Orderbook — bottom left */}
         <motion.div
           className="absolute bottom-[10%] left-[4%] z-20 hidden lg:block"
@@ -815,7 +782,7 @@ const LandingPage = () => {
           </div>
         </motion.div>
 
-        {/* ── Main content: MASSIVE typography ── */}
+        {/* ── Main content: MASSIVE typography with rocket beside ── */}
         <div className="relative z-10 w-full px-4 flex flex-col items-center justify-center">
           {/* Top badge */}
           <motion.div
@@ -831,22 +798,63 @@ const LandingPage = () => {
             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.15em]">Live · NSE · Tick-by-Tick</span>
           </motion.div>
 
-          {/* MASSIVE GRAVITY TEXT */}
-          <motion.h1
-            className="text-[18vw] sm:text-[16vw] md:text-[14vw] font-black leading-[0.85] tracking-tighter text-center select-none"
-            initial={{ opacity: 0, y: 60, filter: "blur(20px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage: "linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 40%, hsl(var(--foreground) / 0.15) 100%)",
-              }}
+          {/* GRAVITY TEXT + ROCKET side by side */}
+          <div className="flex items-center justify-center gap-0 relative">
+            {/* Gravity wave ring — behind rocket */}
+            <motion.div
+              className="absolute -right-8 md:right-[-2vw] top-1/2 -translate-y-1/2 z-0 hidden sm:block"
+              initial={{ opacity: 0, scale: 0.3 }}
+              animate={{ opacity: 0.5, scale: 1 }}
+              transition={{ duration: 1.5, delay: 0.5 }}
             >
-              Gravity
-            </span>
-          </motion.h1>
+              <motion.img
+                src={heroGravityWave}
+                alt=""
+                className="w-[180px] md:w-[260px] lg:w-[340px] drop-shadow-[0_0_50px_hsl(var(--primary)/0.25)]"
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              />
+            </motion.div>
+
+            <motion.h1
+              className="text-[18vw] sm:text-[16vw] md:text-[14vw] font-black leading-[0.85] tracking-tighter text-center select-none"
+              initial={{ opacity: 0, y: 60, filter: "blur(20px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: "linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 40%, hsl(var(--foreground) / 0.15) 100%)",
+                }}
+              >
+                Gravity
+              </span>
+            </motion.h1>
+
+            {/* Rocket beside the text */}
+            <motion.div
+              className="relative z-10 -ml-[4vw] hidden sm:block"
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <motion.img
+                src={heroRocket}
+                alt=""
+                className="w-[100px] md:w-[160px] lg:w-[220px] drop-shadow-[0_20px_60px_hsl(var(--warning)/0.4)]"
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+              {/* Fire glow under rocket */}
+              <motion.div
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 md:w-24 h-16 md:h-24 rounded-full"
+                style={{ background: "radial-gradient(circle, hsl(var(--warning) / 0.5) 0%, hsl(var(--destructive) / 0.3) 40%, transparent 70%)" }}
+                animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </motion.div>
+          </div>
 
           {/* Tagline under the massive text */}
           <motion.p

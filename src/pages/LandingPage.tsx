@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import gravityLogo from "@/assets/gravity-logo.png";
-import heroChart from "@/assets/hero-chart.png";
-import heroBull from "@/assets/hero-bull.png";
+import heroRocket from "@/assets/hero-rocket.png";
+import heroGravityWave from "@/assets/hero-gravity-wave.png";
 import heroOrderbook from "@/assets/hero-orderbook.png";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
@@ -728,36 +728,36 @@ const LandingPage = () => {
         <HFTDataFlow />
         <GlowOrbs />
 
-        {/* Floating dramatic images */}
-        {/* Bull statue — top right, overlapping text */}
+        {/* Floating dramatic images — physics themed */}
+        {/* Rocket — top right, launching upward */}
         <motion.div
-          className="absolute top-[5%] right-[0%] z-30 hidden md:block"
-          initial={{ opacity: 0, x: 80, rotate: 5 }}
-          animate={{ opacity: 0.9, x: 0, rotate: -2 }}
+          className="absolute top-[5%] right-[2%] z-30 hidden md:block"
+          initial={{ opacity: 0, y: 80 }}
+          animate={{ opacity: 0.9, y: 0 }}
           transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
         >
           <motion.img
-            src={heroBull}
+            src={heroRocket}
             alt=""
-            className="w-[260px] lg:w-[380px] drop-shadow-[0_0_60px_hsl(var(--primary)/0.25)]"
-            animate={{ y: [0, -12, 0], rotate: [-2, 1, -2] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="w-[220px] lg:w-[320px] drop-shadow-[0_0_60px_hsl(var(--primary)/0.3)]"
+            animate={{ y: [0, -15, 0], rotate: [0, 3, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
         </motion.div>
 
-        {/* Chart dashboard — top left, tilted */}
+        {/* Gravity wave — top left */}
         <motion.div
-          className="absolute top-[8%] left-[2%] z-20 hidden md:block"
-          initial={{ opacity: 0, x: -60, rotate: -8 }}
-          animate={{ opacity: 0.8, x: 0, rotate: -6 }}
+          className="absolute top-[10%] left-[3%] z-20 hidden md:block"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.7, scale: 1 }}
           transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
         >
           <motion.img
-            src={heroChart}
+            src={heroGravityWave}
             alt=""
-            className="w-[220px] lg:w-[300px] rounded border border-border/20 shadow-2xl shadow-primary/10"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="w-[200px] lg:w-[280px] drop-shadow-[0_0_40px_hsl(var(--primary)/0.2)]"
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
         </motion.div>
 

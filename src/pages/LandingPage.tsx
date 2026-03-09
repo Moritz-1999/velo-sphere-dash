@@ -720,34 +720,125 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
       {/* ── HERO ── */}
-      <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center">
+      <motion.div style={{ opacity: heroOpacity, scale: heroScale, y: heroY }} className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Background layers */}
-        <GlowOrbs />
-        {/* OrbitingRings removed */}
         <HFTDataFlow />
+        <GlowOrbs />
 
-        {/* Grid */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage: `
-                linear-gradient(hsl(var(--primary) / 0.4) 1px, transparent 1px),
-                linear-gradient(90deg, hsl(var(--primary) / 0.4) 1px, transparent 1px)
-              `,
-              backgroundSize: "80px 80px",
-            }}
-          />
-        </div>
+        {/* Floating UI fragment — top left: mini watchlist */}
+        <motion.div
+          className="absolute top-[12%] left-[6%] z-20 hidden md:block"
+          initial={{ opacity: 0, x: -40, rotate: -3 }}
+          animate={{ opacity: 1, x: 0, rotate: -2 }}
+          transition={{ duration: 1, delay: 0.8 }}
+        >
+          <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-48 shadow-2xl shadow-primary/5">
+            <div className="text-[8px] font-mono text-muted-foreground/60 mb-2 flex items-center gap-1.5">
+              <motion.span className="w-1 h-1 rounded-full bg-positive" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
+              WATCHLIST
+            </div>
+            {[
+              { s: "RELIANCE", p: "₹2,487", c: "+1.24%", up: true },
+              { s: "HDFCBANK", p: "₹1,634", c: "-0.42%", up: false },
+              { s: "TCS", p: "₹3,942", c: "+2.31%", up: true },
+              { s: "INFY", p: "₹1,567", c: "+1.78%", up: true },
+            ].map((r) => (
+              <div key={r.s} className="flex items-center justify-between text-[8px] font-mono py-0.5">
+                <span className="text-foreground/50">{r.s}</span>
+                <span className="text-foreground/30">{r.p}</span>
+                <span className={r.up ? "text-positive" : "text-negative"}>{r.c}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Floating UI fragment — top right: mini chart */}
+        <motion.div
+          className="absolute top-[15%] right-[5%] z-20 hidden md:block"
+          initial={{ opacity: 0, x: 40, rotate: 2 }}
+          animate={{ opacity: 1, x: 0, rotate: 3 }}
+          transition={{ duration: 1, delay: 1.0 }}
+        >
+          <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-52 shadow-2xl shadow-primary/5">
+            <div className="text-[8px] font-mono text-muted-foreground/60 mb-1 flex items-center gap-1.5">
+              <motion.span className="w-1 h-1 rounded-full bg-primary" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }} />
+              NIFTY 50 · 1s
+            </div>
+            <svg viewBox="0 0 200 60" className="w-full h-12">
+              <defs>
+                <linearGradient id="heroChartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,40 L15,35 L30,38 L45,30 L60,32 L75,25 L90,28 L105,20 L120,22 L135,15 L150,18 L165,12 L180,16 L200,10 L200,60 L0,60 Z" fill="url(#heroChartGrad)" />
+              <path d="M0,40 L15,35 L30,38 L45,30 L60,32 L75,25 L90,28 L105,20 L120,22 L135,15 L150,18 L165,12 L180,16 L200,10" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+              <circle cx="200" cy="10" r="2" fill="hsl(var(--primary))">
+                <animate attributeName="r" values="1.5;3;1.5" dur="1s" repeatCount="indefinite" />
+              </circle>
+            </svg>
+          </div>
+        </motion.div>
+
+        {/* Floating UI fragment — bottom left: order flow tape */}
+        <motion.div
+          className="absolute bottom-[18%] left-[8%] z-20 hidden lg:block"
+          initial={{ opacity: 0, y: 30, rotate: 1 }}
+          animate={{ opacity: 1, y: 0, rotate: -1 }}
+          transition={{ duration: 1, delay: 1.2 }}
+        >
+          <div className="bg-card/60 backdrop-blur-xl border border-border/30 p-3 w-44 shadow-2xl shadow-primary/5">
+            <div className="text-[8px] font-mono text-muted-foreground/60 mb-2">ORDER FLOW</div>
+            {[
+              { a: "BUY", s: "NIFTY", q: "2400", up: true },
+              { a: "SELL", s: "BNKNIFTY", q: "1800", up: false },
+              { a: "BUY", s: "RELIANCE", q: "3200", up: true },
+            ].map((t, i) => (
+              <div key={i} className="flex items-center gap-1.5 text-[7px] font-mono py-0.5">
+                <span className={t.up ? "text-positive" : "text-negative"}>{t.a}</span>
+                <span className="text-foreground/40 flex-1">{t.s}</span>
+                <span className="text-foreground/30">{t.q}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Corner labels — monospace metadata */}
+        <motion.div
+          className="absolute bottom-10 left-8 z-20 hidden md:block"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+        >
+          <div className="text-[10px] font-mono text-muted-foreground/30 uppercase leading-relaxed">
+            Tick-by-tick data<br />
+            Institutional grade<br />
+            Order flow analytics
+          </div>
+        </motion.div>
 
         <motion.div
-          className="relative z-10 max-w-5xl mx-auto px-6 text-center"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
+          className="absolute bottom-10 right-8 z-20 hidden md:block"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
         >
-          {/* Badge */}
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-1.5 border border-border/30 bg-card/20 backdrop-blur-md mb-8 rounded-full">
+          <div className="text-[10px] font-mono text-muted-foreground/30 uppercase leading-relaxed text-right">
+            50ms latency<br />
+            200+ F&O stocks<br />
+            Real-time streaming
+          </div>
+        </motion.div>
+
+        {/* ── Main content: MASSIVE typography ── */}
+        <div className="relative z-10 w-full px-4 flex flex-col items-center justify-center">
+          {/* Top badge */}
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-1.5 border border-border/30 bg-card/20 backdrop-blur-md mb-6 rounded-full"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-positive opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-positive"></span>
@@ -755,21 +846,40 @@ const LandingPage = () => {
             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.15em]">Live · NSE · Tick-by-Tick</span>
           </motion.div>
 
-          {/* Title */}
-          <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
-            <span className="text-foreground">Trade at the</span>
-            <br />
-            <GradientText>Speed of Data</GradientText>
+          {/* MASSIVE GRAVITY TEXT */}
+          <motion.h1
+            className="text-[18vw] sm:text-[16vw] md:text-[14vw] font-black leading-[0.85] tracking-tighter text-center select-none"
+            initial={{ opacity: 0, y: 60, filter: "blur(20px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 40%, hsl(var(--foreground) / 0.15) 100%)",
+              }}
+            >
+              Gravity
+            </span>
           </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p variants={itemVariants} className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            India's fastest institutional-grade terminal. Tick-by-tick data, OI intelligence,
-            options flow — all in one blazing-fast interface.
+          {/* Tagline under the massive text */}
+          <motion.p
+            className="text-sm sm:text-base text-muted-foreground/60 font-mono mt-4 mb-8 text-center max-w-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+          >
+            India's fastest institutional-grade trading terminal
           </motion.p>
 
           {/* CTA Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+          <motion.div
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.6 }}
+          >
             <motion.button
               onClick={() => navigate("/market")}
               className="group px-10 py-3.5 bg-primary text-primary-foreground font-bold text-sm transition-all duration-300 flex items-center gap-2 relative overflow-hidden"
@@ -793,41 +903,23 @@ const LandingPage = () => {
               Watch Demo
             </motion.button>
           </motion.div>
-
-          {/* Speed Counters */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 max-w-3xl mx-auto">
-            {[
-              { value: 200, suffix: "+", label: "F&O Stocks", icon: <BarChart3 className="h-4 w-4" />, color: "text-muted-foreground" },
-              { value: 50, suffix: "ms", label: "Avg Latency", icon: <Gauge className="h-4 w-4" />, color: "text-muted-foreground" },
-              { value: 10000, suffix: "+", label: "Ticks/sec", icon: <Cpu className="h-4 w-4" />, color: "text-muted-foreground" },
-              { value: 99.9, suffix: "%", label: "Uptime", decimals: 1, icon: <Radio className="h-4 w-4" />, color: "text-muted-foreground" },
-            ].map((s, i) => (
-              <motion.div
-                key={i}
-                className="text-center"
-                whileHover={{ scale: 1.08 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <div className={`${s.color} opacity-50 mb-2 flex justify-center`}>{s.icon}</div>
-                <div className={`text-2xl sm:text-4xl font-bold ${s.color}`}>
-                  <AnimatedCounter end={s.value} suffix={s.suffix} duration={2.5} decimals={s.decimals} />
-                </div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] mt-1">{s.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
+        </div>
 
         {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
         >
-          <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">Scroll</span>
-          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-            <ChevronDown className="h-4 w-4 text-muted-foreground/30" />
+          <motion.div
+            className="w-5 h-8 rounded-full border border-muted-foreground/20 flex items-start justify-center p-1"
+          >
+            <motion.div
+              className="w-1 h-1.5 rounded-full bg-muted-foreground/40"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
           </motion.div>
         </motion.div>
       </motion.div>

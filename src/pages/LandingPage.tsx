@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import gravityLogo from "@/assets/gravity-logo.png";
-import heroChart from "@/assets/hero-chart.png";
-import heroBull from "@/assets/hero-bull.png";
+import heroRocket from "@/assets/hero-rocket.png";
+import heroGravityWave from "@/assets/hero-gravity-wave.png";
 import heroOrderbook from "@/assets/hero-orderbook.png";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";

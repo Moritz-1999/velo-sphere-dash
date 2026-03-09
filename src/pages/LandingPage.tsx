@@ -831,25 +831,15 @@ const LandingPage = () => {
                 Grav
               </span>
               {/* Rocket replacing the "i" */}
-              <motion.span
-                className="inline-flex flex-col items-center relative"
-                style={{ width: "0.35em", marginBottom: "-0.05em" }}
-              >
+              <span className="inline-block relative" style={{ width: "0.42em" }}>
                 <motion.img
                   src={heroRocket}
                   alt=""
-                  className="h-[0.9em] w-auto drop-shadow-[0_10px_40px_hsl(var(--warning)/0.5)] relative z-10"
-                  animate={{ y: [0, -8, 0] }}
+                  className="h-[1em] w-auto object-contain drop-shadow-[0_10px_40px_hsl(var(--primary)/0.3)] mx-auto"
+                  animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
-                {/* Fire glow under rocket */}
-                <motion.div
-                  className="absolute -bottom-[0.1em] left-1/2 -translate-x-1/2 w-[0.3em] h-[0.25em] rounded-full z-0"
-                  style={{ background: "radial-gradient(circle, hsl(var(--warning) / 0.6) 0%, hsl(var(--destructive) / 0.4) 40%, transparent 70%)" }}
-                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </motion.span>
+              </span>
               <span
                 className="bg-clip-text text-transparent"
                 style={{

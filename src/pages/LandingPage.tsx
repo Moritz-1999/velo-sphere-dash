@@ -817,7 +817,7 @@ const LandingPage = () => {
             </motion.div>
 
             <motion.h1
-              className="text-[18vw] sm:text-[16vw] md:text-[14vw] font-black leading-[0.85] tracking-tighter text-center select-none"
+              className="text-[18vw] sm:text-[16vw] md:text-[14vw] font-black leading-[0.85] tracking-tighter text-center select-none flex items-end justify-center"
               initial={{ opacity: 0, y: 60, filter: "blur(20px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 1.2, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -828,32 +828,37 @@ const LandingPage = () => {
                   backgroundImage: "linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 40%, hsl(var(--foreground) / 0.15) 100%)",
                 }}
               >
-                Gravity
+                Grav
+              </span>
+              {/* Rocket replacing the "i" */}
+              <motion.span
+                className="inline-flex flex-col items-center relative"
+                style={{ width: "0.35em", marginBottom: "-0.05em" }}
+              >
+                <motion.img
+                  src={heroRocket}
+                  alt=""
+                  className="h-[0.9em] w-auto drop-shadow-[0_10px_40px_hsl(var(--warning)/0.5)] relative z-10"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* Fire glow under rocket */}
+                <motion.div
+                  className="absolute -bottom-[0.1em] left-1/2 -translate-x-1/2 w-[0.3em] h-[0.25em] rounded-full z-0"
+                  style={{ background: "radial-gradient(circle, hsl(var(--warning) / 0.6) 0%, hsl(var(--destructive) / 0.4) 40%, transparent 70%)" }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.span>
+              <span
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: "linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 40%, hsl(var(--foreground) / 0.15) 100%)",
+                }}
+              >
+                ty
               </span>
             </motion.h1>
-
-            {/* Rocket beside the text */}
-            <motion.div
-              className="relative z-10 -ml-[4vw] hidden sm:block"
-              initial={{ opacity: 0, y: 100 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <motion.img
-                src={heroRocket}
-                alt=""
-                className="w-[100px] md:w-[160px] lg:w-[220px] drop-shadow-[0_20px_60px_hsl(var(--warning)/0.4)]"
-                animate={{ y: [0, -12, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              {/* Fire glow under rocket */}
-              <motion.div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 md:w-24 h-16 md:h-24 rounded-full"
-                style={{ background: "radial-gradient(circle, hsl(var(--warning) / 0.5) 0%, hsl(var(--destructive) / 0.3) 40%, transparent 70%)" }}
-                animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </motion.div>
           </div>
 
           {/* Tagline under the massive text */}
